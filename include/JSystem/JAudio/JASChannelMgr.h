@@ -19,7 +19,7 @@ namespace JASystem {
         void addListTail(TChannel*, u32);
         TChannel* getListHead(u32);
         int cutList(TChannel*);
-        void receiveAllChannels(TChannelMgr*);
+        int receiveAllChannels(TChannelMgr*);
         int checkLimitStart(u32);
         void checkLimitStop(TChannel*, u32);
 

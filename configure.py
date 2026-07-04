@@ -877,7 +877,7 @@ config.libs = [
             Object(Matching,    "JSystem/JAudio/JASChGlobal.cpp"),
             Object(Matching,    "JSystem/JAudio/JASChAllocQueue.cpp"),
             Object(Matching,    "JSystem/JAudio/JASChannel.cpp"),
-            Object(NonMatching, "JSystem/JAudio/JASChannelMgr.cpp"),
+            Object(Matching,    "JSystem/JAudio/JASChannelMgr.cpp"),
             Object(Matching,    "JSystem/JAudio/JASOscillator.cpp"),
             Object(Matching,    "JSystem/JAudio/JASDriverTables.cpp"),
             Object(Matching,    "JSystem/JAudio/dspproc.c", extra_cflags=["-lang c++", "-O4", "-func_align 32"]),
