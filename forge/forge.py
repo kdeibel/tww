@@ -13,7 +13,17 @@ import json, os, re, subprocess, sys, threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OBJDIFF = os.path.join(ROOT, "build", "tools", "objdiff-cli.exe")
+
+def _objdiff_binary():
+    native = os.path.join(ROOT, "build", "tools", "objdiff-cli")
+    if os.name != "nt" and os.path.exists(native):
+        return native
+    return native + ".exe"
+
+OBJDIFF = _objdiff_binary()
+# objdiff-cli v3 dropped `diff -o out --format json`; keep a 2.7.x binary for that.
+_DIFF276 = os.path.join(ROOT, "build", "tools", "objdiff-cli-2.7.1")
+OBJDIFF_DIFF = _DIFF276 if os.path.exists(_DIFF276) else OBJDIFF
 REPORT = os.path.join(ROOT, "build", "report.json")
 TARGETS = os.path.join(ROOT, "forge", "targets.json")
 CONFIG = os.path.join(ROOT, "forge", "config.json")
@@ -109,7 +119,7 @@ def obj_path(unit):
 
 def get_diff(unit, symbol):
     out = os.path.join(ROOT, "build", "fndiff.json")
-    r = run([OBJDIFF, "diff", "-p", ".", "-u", unit, symbol, "-o", out, "--format", "json"])
+    r = run([OBJDIFF_DIFF, "diff", "-p", ".", "-u", unit, symbol, "-o", out, "--format", "json"])
     if r.returncode != 0:
         return None
     with open(out) as f:
@@ -120,7 +130,15 @@ def diff_rows(unit, symbol):
     if not d:
         return None, None
     def find(side):
-        for s in d[side]["symbols"]:
+        # objdiff-cli 2.7.x nests symbols under sections
+        for sec in d[side].get("sections", []):
+            if sec.get("kind") != "SECTION_TEXT":
+                continue
+            for s in sec.get("symbols", []):
+                name = (s.get("symbol") or {}).get("name") or s.get("name")
+                if name == symbol:
+                    return s
+        for s in d[side].get("symbols", []):
             if s.get("name") == symbol:
                 return s
         return None
