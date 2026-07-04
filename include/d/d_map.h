@@ -403,7 +403,7 @@ public:
     static void getCheckPointUseGrid(s8, s8);
     static void getFmapChkPntPrm(int, s8*, s8*, s16*, s16*, u8*);
     static void setFmapChkDtPrm();
-    static void getFmapChkPntDtPnt(int);
+    static int getFmapChkPntDtPnt(int);
     static void initPoint();
     static void setGbaPoint_ocean(u8, f32, f32, s16, u8, u8, u8, u8);
     static BOOL isPointStayInDspNowRoomAgbScr(s16, s16);

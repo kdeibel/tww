@@ -68,7 +68,7 @@ cXyz dCamMath::xyzProjPosOnYZ(cSAngle angle, cXyz& a, cXyz& b) {
     rot = xyzRotateY(line, -angle);
     rot.x = 0.0f;
     line = xyzRotateY(rot, angle);
-    return b + line;
+    return a + line;
 }
 
 /* 800AF810-800AF838       .text __ct__9dCstick_cFv */

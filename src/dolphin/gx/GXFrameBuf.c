@@ -313,10 +313,10 @@ void GXSetDispCopyFrame2Field(GXCopyMode arg0) {
 void GXSetCopyClamp(GXFBClamp clamp) {
     u8 isTop = (clamp & GX_CLAMP_TOP) == GX_CLAMP_TOP;
     u8 isBottom = (clamp & GX_CLAMP_BOTTOM) == GX_CLAMP_BOTTOM;
-    gx->cpDisp = __rlwimi(gx->cpDisp, isTop, 0, 31, 31);
-    gx->cpDisp = __rlwimi(gx->cpDisp, isBottom, 1, 30, 30);
-    gx->cpTex = __rlwimi(gx->cpTex, isTop, 0, 31, 31);
-    gx->cpTex = __rlwimi(gx->cpTex, isBottom, 1, 30, 30);
+    gx->cpDisp = (gx->cpDisp & ~0x1) | isTop;
+    gx->cpDisp = (gx->cpDisp & ~0x2) | (isBottom << 1);
+    gx->cpTex = (gx->cpTex & ~0x1) | isTop;
+    gx->cpTex = (gx->cpTex & ~0x2) | (isBottom << 1);
 }
 
 static u32 __GXGetNumXfbLines(u32 height, u32 scale) {
@@ -528,9 +528,7 @@ void GXCopyDisp(void* dest, GXBool doClear) {
         GX_BP_LOAD_REG(reg);
 
         reg = gx->cmode0;
-        GX_SET_REG(reg, 0, 31, 31);
-        GX_SET_REG(reg, 0, 30, 30);
-        GX_BP_LOAD_REG(reg);
+        GX_BP_LOAD_REG(reg & ~0x3);
     }
 
     check = GX_FALSE;
@@ -581,9 +579,7 @@ void GXCopyTex(void* dest, GXBool doClear) {
         GX_BP_LOAD_REG(reg);
 
         reg = gx->cmode0;
-        GX_SET_REG(reg, 0, 31, 31);
-        GX_SET_REG(reg, 0, 30, 30);
-        GX_BP_LOAD_REG(reg);
+        GX_BP_LOAD_REG(reg & ~0x3);
     }
 
     check = GX_FALSE;

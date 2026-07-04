@@ -1679,8 +1679,15 @@ void dMap_c::setFmapChkDtPrm() {
 }
 
 /* 8004AD00-8004ADC8       .text getFmapChkPntDtPnt__6dMap_cFi */
-void dMap_c::getFmapChkPntDtPnt(int) {
-    /* Nonmatching */
+int dMap_c::getFmapChkPntDtPnt(int i_no) {
+    JUT_ASSERT(6075, (u32)mFmapChkPntData_p != 0);
+    int p = 0;
+    if (i_no >= 0 && i_no <= mFmapChkPntValue) {
+        p = mFmapChkPntData_p + i_no * 8;
+    } else {
+        JUT_ASSERT(6082, 0);
+    }
+    return p;
 }
 
 /* 8004ADC8-8004AE28       .text initPoint__6dMap_cFv */
