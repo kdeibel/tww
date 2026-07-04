@@ -593,6 +593,7 @@ public:
     JKRArchive* getSwimResArchive() { return mpSwimResArchive; }
     void setSwimResArchive(JKRArchive * pArc) { mpSwimResArchive = pArc; }
     void setWindResArchive(JKRArchive * pArc) { mpWindResArchive = pArc; }
+    JKRArchive* getWindResArchive() { return mpWindResArchive; }
     void setFontArchive(JKRArchive * pArc) { mpFont0Archive = pArc; }
     void setMsgDtArchive(JKRArchive * pArc) { mpEnglishTextArchive = pArc; }
     JKRArchive* getMsgDtArchive() { return mpEnglishTextArchive; }
@@ -3889,6 +3890,7 @@ inline void dComIfGp_setCameraResArchive(JKRArchive * pArc) { g_dComIfG_gameInfo
 inline JKRArchive* dComIfGp_getSwimResArchive() { return g_dComIfG_gameInfo.play.getSwimResArchive(); }
 inline void dComIfGp_setSwimResArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setSwimResArchive(pArc); }
 inline void dComIfGp_setWindResArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setWindResArchive(pArc); }
+inline JKRArchive* dComIfGp_getWindResArchive() { return g_dComIfG_gameInfo.play.getWindResArchive(); }
 inline void dComIfGp_setFontArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setFontArchive(pArc); }
 inline void dComIfGp_setMsgDtArchive(JKRArchive * pArc) { g_dComIfG_gameInfo.play.setMsgDtArchive(pArc); }
 inline JKRArchive* dComIfGp_getMsgDtArchive() { return g_dComIfG_gameInfo.play.getMsgDtArchive(); }

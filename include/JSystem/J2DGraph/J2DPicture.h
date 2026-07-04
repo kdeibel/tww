@@ -27,7 +27,10 @@ enum J2DMirror {
 class J2DPicture : public J2DPane {
 public:
     struct TCornerColor {
-        // TODO
+        JUtility::TColor mColor0;
+        JUtility::TColor mColor1;
+        JUtility::TColor mColor2;
+        JUtility::TColor mColor3;
     };
 
     J2DPicture();
@@ -123,7 +126,12 @@ public:
     void load(u8 i) { mpTexture[i]->load((GXTexMapID)i); }
 
     // TODO
-    void getCornerColor(J2DPicture::TCornerColor&) const {}
+    void getCornerColor(J2DPicture::TCornerColor& out) const {
+        out.mColor0 = mCornerColor[0];
+        out.mColor1 = mCornerColor[1];
+        out.mColor2 = mCornerColor[2];
+        out.mColor3 = mCornerColor[3];
+    }
 
 protected:
     /* 0x0CC */ JUTTexture* mpTexture[4];

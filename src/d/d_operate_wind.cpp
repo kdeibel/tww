@@ -9,11 +9,18 @@
 #include "f_op/f_op_msg_mng.h"
 #include "m_Do/m_Do_ext.h"
 #include "JSystem/J2DGraph/J2DOrthoGraph.h"
+#include "JSystem/J2DGraph/J2DPicture.h"
 #include "JSystem/J2DGraph/J2DScreen.h"
 #include "JSystem/JKernel/JKRExpHeap.h"
 #include "JSystem/JKernel/JKRHeap.h"
 #include "JSystem/JUtility/JUTAssert.h"
 #include "SSystem/SComponent/c_phase.h"
+#include "d/d_kankyo_wether.h"
+#include "d/d_lib.h"
+#include "d/d_meter.h"
+#include "m_Do/m_Do_controller_pad.h"
+
+extern dOw_HIO_c g_owHIO;
 
 /* 8021E58C-8021E5F8       .text __ct__9dOw_HIO_cFv */
 dOw_HIO_c::dOw_HIO_c() {                           
@@ -126,7 +133,40 @@ int dOperate_wind_c::dOw_stickControl(int ret, s16 ang) {
 
 /* 8021E974-8021ED4C       .text screenSet__15dOperate_wind_cFv */
 void dOperate_wind_c::screenSet() {
-    /* Nonmatching */
+    fopMsgM_setPaneData(&field_0x0c[0], scrn1, 'wdn');
+    fopMsgM_setPaneData(&field_0x0c[1], scrn1, 'wds');
+    fopMsgM_setPaneData(&field_0x0c[2], scrn1, 'wdw');
+    fopMsgM_setPaneData(&field_0x0c[3], scrn1, 'wde');
+    fopMsgM_setPaneData(&field_0x54c, scrn1, 'win');
+    fopMsgM_setPaneData(&field_0x0c[4], scrn1, 'wib');
+    fopMsgM_setPaneData(&field_0x124[0], scrn1, 'wi21');
+    fopMsgM_setPaneData(&field_0x124[1], scrn1, 'wi22');
+    fopMsgM_setPaneData(&field_0x194, scrn1, 'wi2b');
+    fopMsgM_setPaneData(&field_0x1cc[0], scrn1, 'n2');
+    fopMsgM_setPaneData(&field_0x1cc[1], scrn1, 's2');
+    fopMsgM_setPaneData(&field_0x1cc[2], scrn1, 'w2');
+    fopMsgM_setPaneData(&field_0x1cc[3], scrn1, 'e2');
+    field_0x1cc[0].pane->hide();
+    field_0x1cc[1].pane->hide();
+    field_0x1cc[2].pane->hide();
+    field_0x1cc[3].pane->hide();
+    fopMsgM_setPaneData(&field_0x2ac[0], scrn1, 'str1');
+    fopMsgM_setPaneData(&field_0x2ac[1], scrn1, 'str2');
+    fopMsgM_setPaneData(&field_0x2ac[2], scrn1, 'str3');
+    fopMsgM_setPaneData(&field_0x2ac[3], scrn1, 'str4');
+    fopMsgM_setPaneData(&field_0x2ac[4], scrn1, 'str5');
+    fopMsgM_setPaneData(&field_0x2ac[5], scrn1, 'str6');
+    fopMsgM_setPaneData(&field_0x2ac[6], scrn1, 'str7');
+    fopMsgM_setPaneData(&field_0x2ac[7], scrn1, 'str8');
+    fopMsgM_setPaneData(&field_0x46c[0], scrn1, 'ci04');
+    fopMsgM_setPaneData(&field_0x46c[1], scrn1, 'ci05');
+    fopMsgM_setPaneData(&field_0x46c[2], scrn1, 'ci06');
+    fopMsgM_setPaneData(&field_0x46c[3], scrn1, 'ci07');
+    fopMsgM_setPaneData(&field_0x554, scrn2, 'mask');
+    field_0x554.mInitAlpha = 130;
+    ((J2DPicture*)field_0x54c.pane)->getCornerColor(*(J2DPicture::TCornerColor*)&field_0x568[0]);
+    ((J2DPicture*)field_0x124[0].pane)->getCornerColor(*(J2DPicture::TCornerColor*)&field_0x568[4]);
+    ((J2DPicture*)field_0x554.pane)->getCornerColor(*(J2DPicture::TCornerColor*)&field_0x568[8]);
 }
 
 /* 8021ED4C-8021EE9C       .text alphaSet__15dOperate_wind_cFf */
@@ -160,13 +200,30 @@ void dOperate_wind_c::windSet() {
 }
 
 /* 802208C4-8022098C       .text ringScale__15dOperate_wind_cFf */
-void dOperate_wind_c::ringScale(f32) {
-    /* Nonmatching */
+void dOperate_wind_c::ringScale(f32 v) {
+    for (int i = 0; i < 4; i++) {
+        if (i == 0) {
+            field_0x46c[i].mPosCenter.x = field_0x8c0 + v * (field_0x46c[i].mPosCenterOrig.x - field_0x8c0);
+            field_0x46c[i].mPosCenter.y = field_0x8c4 + v * (field_0x46c[i].mPosCenterOrig.y - field_0x8c4);
+        } else {
+            field_0x46c[i].mPosCenter.x = field_0x46c[i].mPosCenterOrig.x * v;
+            field_0x46c[i].mPosCenter.y = field_0x46c[i].mPosCenterOrig.y * v;
+        }
+        fopMsgM_paneScaleXY(&field_0x46c[i], v);
+    }
 }
 
 /* 8022098C-80220A60       .text directionTrans__15dOperate_wind_cFf */
-void dOperate_wind_c::directionTrans(f32) {
-    /* Nonmatching */
+void dOperate_wind_c::directionTrans(f32 v) {
+    f32 d = 80.0f * v;
+    fopMsgM_paneTrans(&field_0x0c[0], 0.0f, d);
+    fopMsgM_paneTrans(&field_0x0c[1], 0.0f, -d);
+    fopMsgM_paneTrans(&field_0x0c[2], d, 0.0f);
+    fopMsgM_paneTrans(&field_0x0c[3], -d, 0.0f);
+    fopMsgM_paneTrans(&field_0x1cc[0], 0.0f, d);
+    fopMsgM_paneTrans(&field_0x1cc[1], 0.0f, -d);
+    fopMsgM_paneTrans(&field_0x1cc[2], d, 0.0f);
+    fopMsgM_paneTrans(&field_0x1cc[3], -d, 0.0f);
 }
 
 /* 80220A60-80220CD8       .text lineInit__15dOperate_wind_cFf */
@@ -180,48 +237,152 @@ void dOperate_wind_c::lineDraw() {
 }
 
 /* 80220D80-80220E18       .text arrowRotate__15dOperate_wind_cFP18fopMsgM_pane_classs */
-void dOperate_wind_c::arrowRotate(fopMsgM_pane_class*, s16) {
-    /* Nonmatching */
+void dOperate_wind_c::arrowRotate(fopMsgM_pane_class* i_pane, s16 i_angle) {
+    if (i_angle < 0) {
+        i_angle += 360;
+    }
+    if (i_angle > 360) {
+        i_angle -= 360;
+    }
+    J2DPane* pane = i_pane->pane;
+    pane->mBasePosition.x = i_pane->mSizeOrig.x * 0.5f;
+    pane->mBasePosition.y = i_pane->mSizeOrig.y * 0.5f;
+    pane->mRotationAxis = 'z';
+    pane->mRotation = i_angle;
+    pane->calcMtx();
 }
 
 /* 80220E18-80221090       .text initialize__15dOperate_wind_cFv */
 void dOperate_wind_c::initialize() {
-    /* Nonmatching */
+    field_0x8c8 = 0;
+    field_0x8ca = 0;
+    field_0x8ce = g_owHIO.field_0x0e;
+    field_0x8d4 = 0;
+    field_0x8d0 = 0;
+    field_0x0c[4].mUserArea = 0;
+    field_0x46c[0].mUserArea = 0;
+    field_0x124[0].mUserArea = 30;
+    field_0x124[1].mUserArea = 35;
+    ((J2DPicture*)field_0x124[0].pane)->setCornerColor(
+        JUtility::TColor(0xFFFFFF96), JUtility::TColor(0x00FFFFFF),
+        JUtility::TColor(0xFFFFFF96), JUtility::TColor(0x00FFFFFF));
+    ((J2DPicture*)field_0x124[1].pane)->setCornerColor(
+        JUtility::TColor(0xFFFFFF96), JUtility::TColor(0x00FFFFFF),
+        JUtility::TColor(0xFFFFFF96), JUtility::TColor(0x00FFFFFF));
+    field_0x8c0 = field_0x46c[0].mPosTopLeftOrig.x + field_0x46c[0].mSizeOrig.x;
+    field_0x8c4 = field_0x46c[0].mPosTopLeftOrig.y;
+    cXyz* wind = dKyw_get_wind_vec();
+    s16 windAngle = cM_atan2s(wind->x, wind->z) + 0x8000;
+    field_0x8cc = dOw_angleRegular(windAngle * 180.0f / 32768.0f - 90.0f);
+    arrowRotate(&field_0x0c[4], field_0x8cc);
+    arrowRotate(&field_0x194, field_0x8cc + 90);
+    field_0x8b8 = stick->getValueStick();
+    lineInit(0.0f);
 }
 
 /* 80221090-802213B0       .text _create__15dOperate_wind_cFv */
 void dOperate_wind_c::_create() {
-    /* Nonmatching */
+    scrn1 = new J2DScreen();
+    JUT_ASSERT(990, scrn1 != 0);
+    scrn1->set("operate_wind.blo", dComIfGp_getWindResArchive());
+    scrn2 = new J2DScreen();
+    JUT_ASSERT(994, scrn2 != 0);
+    scrn2->set("operate_wind_mask.blo", dComIfGp_getWindResArchive());
+    stick = new STControl(5, 2, 3, 2, 1.0f, 1.0f, 0x1000, 0x2000);
+    JUT_ASSERT(998, stick != 0);
+    mMain = new dDlst_Ow_main_c();
+    JUT_ASSERT(1001, mMain != 0);
+    mMain->setScreen(scrn1);
+    mMask = new dDlst_Ow_mask_c();
+    JUT_ASSERT(1005, mMask != 0);
+    mMask->setScreen(scrn2);
+    screenSet();
+    initialize();
 }
 
 /* 802213B0-8022147C       .text _delete__15dOperate_wind_cFv */
 void dOperate_wind_c::_delete() {
-    /* Nonmatching */
+    delete scrn1;
+    delete scrn2;
+    delete stick;
+    delete mMain;
+    delete mMask;
+    dComIfGp_getWindResArchive()->removeResourceAll();
 }
 
 /* 8022147C-8022151C       .text _move__15dOperate_wind_cFv */
 void dOperate_wind_c::_move() {
-    /* Nonmatching */
+    if (!dMenu_flag()) {
+        if (CPad_CHECK_TRIG_A(0)) {
+            windSet();
+            dComIfGp_setOperateWindChangeOff();
+        } else if (CPad_CHECK_TRIG_B(0)) {
+            dComIfGp_setOperateWindCancelOff();
+        }
+        arrowColor1();
+        arrowColor2();
+        maskColor();
+        arrowDirection();
+    }
 }
 
 /* 8022151C-8022163C       .text _draw__15dOperate_wind_cFv */
 void dOperate_wind_c::_draw() {
-    /* Nonmatching */
+    fopMsgM_setAlpha(&field_0x0c[0]);
+    fopMsgM_setAlpha(&field_0x0c[1]);
+    fopMsgM_setAlpha(&field_0x0c[2]);
+    fopMsgM_setAlpha(&field_0x0c[3]);
+    fopMsgM_setAlpha(&field_0x54c);
+    for (int i = 0; i < 2; i++) {
+        fopMsgM_setAlpha(&field_0x124[i]);
+    }
+    fopMsgM_setAlpha(&field_0x194);
+    for (int i = 0; i < 4; i++) {
+        fopMsgM_setAlpha(&field_0x1cc[i]);
+    }
+    for (int i = 0; i < 8; i++) {
+        fopMsgM_setAlpha(&field_0x2ac[i]);
+    }
+    fopMsgM_setAlpha(&field_0x46c[0]);
+    fopMsgM_setAlpha(&field_0x554);
+    lineDraw();
+    dComIfGd_set2DOpa(mMask);
+    dComIfGd_set2DOpa(mMain);
 }
 
 /* 8022163C-802216F0       .text _open__15dOperate_wind_cFv */
 bool dOperate_wind_c::_open() {
-    /* Nonmatching */
+    bool ret = false;
+    if (field_0x8c8 < 10) {
+        field_0x8c8++;
+        f32 v = fopMsgM_valueIncrease(10, field_0x8c8, 0);
+        alphaSet(v);
+        ringScale(v);
+        directionTrans(fopMsgM_valueIncrease(10, 10 - field_0x8c8, 0));
+        lineInit(v);
+    }
+    if (field_0x8c8 >= 10) {
+        ret = true;
+    }
+    return ret;
 }
 
 /* 802216F0-80221770       .text _close__15dOperate_wind_cFv */
 bool dOperate_wind_c::_close() {
-    /* Nonmatching */
+    s16 count = g_owHIO.field_0x18;
+    bool ret = false;
+    if (field_0x8c8 > 0) {
+        field_0x8c8--;
+        alphaSet(fopMsgM_valueIncrease(count, field_0x8c8, 0));
+    }
+    if (field_0x8c8 <= 0) {
+        ret = true;
+    }
+    return ret;
 }
 
 /* 80221770-80221830       .text _create__5dOw_cFv */
 void dOw_c::_create() {
-    /* Nonmatching */
     dOw_scrn = new dOperate_wind_c();
     JUT_ASSERT(0x478, dOw_scrn != NULL);
     dOw_scrn->_create();
@@ -229,7 +390,6 @@ void dOw_c::_create() {
 
 /* 80221830-80221880       .text _delete__5dOw_cFv */
 void dOw_c::_delete() {
-    /* Nonmatching */
     dOw_scrn->_delete();
     delete dOw_scrn;
 }
@@ -242,7 +402,6 @@ bool dOw_c::_draw() {
 
 /* 80221880-802218B4       .text dOw_Draw__FP5dOw_c */
 static BOOL dOw_Draw(dOw_c* i_this) {
-    /* Nonmatching */
     return i_this->_draw();
 }
 
