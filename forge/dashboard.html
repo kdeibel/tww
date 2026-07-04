@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⚒️ Decomp Forge — Wind Waker</title>
+<style>
+:root{--bg:#0a0e14;--panel:#111823;--edge:#1e2a3a;--txt:#c8d6e5;--dim:#5a6a7a;
+--gold:#ffc857;--green:#3ddc84;--red:#ff5c5c;--blue:#4da3ff;--purple:#b388ff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;padding:16px;max-width:1200px;margin:auto}
+h1{font-size:22px;color:var(--gold);letter-spacing:2px;margin-bottom:4px}
+.sub{color:var(--dim);font-size:12px;margin-bottom:16px}
+.panel{background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:14px;margin-bottom:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{background:var(--edge);color:var(--txt);border:1px solid #2c3e50;border-radius:8px;
+padding:10px 16px;font-size:14px;cursor:pointer;transition:.15s}
+button:hover{background:#243447;border-color:var(--blue)}
+button.primary{background:#1c3a5e;border-color:var(--blue);color:#dff0ff}
+button.go{background:#14402a;border-color:var(--green);color:#c9f7dd}
+button:disabled{opacity:.4;cursor:wait}
+.bar{height:26px;background:#0d1420;border:1px solid var(--edge);border-radius:13px;overflow:hidden;position:relative;flex:1;min-width:200px}
+.bar>div{height:100%;background:linear-gradient(90deg,#2e7d32,var(--green));transition:width .6s}
+.bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;text-shadow:0 1px 3px #000}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--dim);text-align:left;padding:6px 8px;font-weight:600;border-bottom:1px solid var(--edge)}
+td{padding:7px 8px;border-bottom:1px solid #16202e}
+tr:hover td{background:#16202e}
+.pct{font-weight:700}
+.pct.hi{color:var(--green)}.pct.mid{color:var(--gold)}.pct.lo{color:var(--red)}
+.mono{font-family:Consolas,monospace}
+#diffbox{display:none}
+.diffwrap{overflow-x:auto;background:#0d1420;border:1px solid var(--edge);border-radius:8px;padding:10px;margin-top:10px}
+.diffwrap pre{font-family:Consolas,monospace;font-size:12px;line-height:1.5;white-space:pre}
+.d-ok{color:#7a8fa5}.d-bad{color:var(--red)}.d-arg{color:var(--gold)}
+#log{font-family:Consolas,monospace;font-size:12px;color:var(--purple);white-space:pre-wrap;margin-top:10px}
+.tag{font-size:11px;background:#1c2a3c;border-radius:5px;padding:2px 8px;color:var(--blue)}
+.spin{display:inline-block;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<h1>⚒️ DECOMP FORGE</h1>
+<div class="sub">The Legend of Zelda: The Wind Waker — function matching command center</div>
+
+<div class="panel">
+  <div class="row">
+    <div class="bar"><div id="progfill" style="width:0%"></div><span id="progtxt">loading…</span></div>
+    <button class="primary" onclick="rescan(this)">🔄 Rescan</button>
+  </div>
+  <div class="sub" style="margin-top:8px" id="fncount"></div>
+</div>
+
+<div class="panel">
+  <div class="row" style="justify-content:space-between">
+    <b style="color:var(--gold)">🎯 Easiest targets first</b>
+    <span class="tag" id="tcount"></span>
+  </div>
+  <table id="targets"><thead><tr>
+    <th>#</th><th>Function</th><th>Match</th><th>Size</th><th>Unit</th><th></th><th></th>
+  </tr></thead><tbody></tbody></table>
+</div>
+
+<div class="panel" id="diffbox">
+  <div class="row" style="justify-content:space-between">
+    <b style="color:var(--blue)" id="dtitle"></b>
+    <div class="row">
+      <button onclick="copyPacket(this)">📋 Copy AI work packet</button>
+      <button class="go" onclick="ollamaGo(this)">🤖 Auto-match (Ollama)</button>
+      <button onclick="hideDiff()">✖ Close</button>
+    </div>
+  </div>
+  <div class="diffwrap"><pre id="diffpre"></pre></div>
+  <div id="log"></div>
+</div>
+
+<script>
+let state=null, current=-1;
+const $=s=>document.querySelector(s);
+
+async function refresh(){
+  state=await (await fetch('/api/state')).json();
+  const p=state.progress||{};
+  const pct=p.matched_percent||0;
+  $('#progfill').style.width=pct+'%';
+  $('#progtxt').textContent=pct+'% matched';
+  $('#fncount').textContent=(p.matched_functions||0).toLocaleString()+' / '+(p.total_functions||0).toLocaleString()
+    +' functions · '+(p.matched_code||0).toLocaleString()+' / '+(p.total_code||0).toLocaleString()+' bytes';
+  const tb=$('#targets tbody'); tb.innerHTML='';
+  (state.targets||[]).forEach((t,i)=>{
+    const cls=t.match>=95?'hi':t.match>=80?'mid':'lo';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td class="mono">${esc(short(t.demangled))}</td>
+      <td class="pct ${cls}">${t.match}%</td><td>${t.size}b</td>
+      <td class="mono" style="color:var(--dim)">${esc(t.unit.split('/').pop())}</td>
+      <td><button onclick="showDiff(${i})">🔍 View</button></td>
+      <td><button class="go" onclick="showDiff(${i},true)">🤖 Match</button></td>`;
+    tb.appendChild(tr);
+  });
+  $('#tcount').textContent=(state.targets||[]).length+' shown';
+}
+function short(s){return s.length>58?s.slice(0,55)+'…':s}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+
+async function showDiff(i,auto){
+  current=i;
+  $('#diffbox').style.display='block';
+  $('#dtitle').textContent=state.targets[i].demangled;
+  $('#diffpre').textContent='loading…'; $('#log').textContent='';
+  const d=await (await fetch('/api/diff?i='+i)).json();
+  let out='';
+  const o=d.diff?d.diff.orig:[], u=d.diff?d.diff.ours:[];
+  const n=Math.max(o.length,u.length);
+  out+='  ORIGINAL'.padEnd(42)+'OURS\n';
+  for(let k=0;k<n;k++){
+    const lm=o[k]?o[k][0]:' ', lf=o[k]?o[k][1]:'', rf=u[k]?u[k][1]:'';
+    const cls=lm==='~'?'d-arg':(lm!==' '?'d-bad':'d-ok');
+    out+=`<span class="${cls}">${esc((lm+' '+lf).padEnd(42))}${esc(rf)}</span>\n`;
+  }
+  $('#diffpre').innerHTML=out+'\n\nCURRENT SOURCE:\n'+esc(d.source||'');
+  $('#diffbox').scrollIntoView({behavior:'smooth'});
+  if(auto) ollamaGo($('#diffbox .go'));
+}
+function hideDiff(){$('#diffbox').style.display='none';current=-1}
+
+async function copyPacket(btn){
+  btn.disabled=true;
+  const d=await (await fetch('/api/packet?i='+current)).json();
+  await navigator.clipboard.writeText(d.packet);
+  btn.textContent='✅ Copied — paste to any AI';
+  setTimeout(()=>{btn.textContent='📋 Copy AI work packet';btn.disabled=false},2500);
+}
+
+async function ollamaGo(btn){
+  if(current<0)return;
+  btn.disabled=true;const old=btn.textContent;
+  btn.innerHTML='<span class="spin">⚙️</span> working…';
+  $('#log').textContent='Asking local Ollama model — this can take a few minutes…';
+  try{
+    const r=await (await fetch('/api/ollama',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({i:current})})).json();
+    $('#log').textContent=(r.log||[]).join('\n');
+    if((r.log||[]).some(l=>l.includes('MATCHED'))){ await refresh(); }
+  }catch(e){$('#log').textContent='error: '+e}
+  btn.disabled=false;btn.textContent=old;
+}
+
+async function rescan(btn){
+  btn.disabled=true;btn.innerHTML='<span class="spin">🔄</span> scanning…';
+  await fetch('/api/scan',{method:'POST'});
+  await refresh();
+  btn.disabled=false;btn.textContent='🔄 Rescan';
+}
+
+refresh();
+</script>
+</body>
+</html>
