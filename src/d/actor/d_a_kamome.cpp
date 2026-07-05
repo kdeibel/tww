@@ -164,7 +164,7 @@ static BOOL daKamome_Draw(kamome_class* i_this) {
         &sp08,
         REG0_F(2) * 10.0f + 500.0f,
         20.0f,
-        sp08.y,
+        i_this->actor.current.pos.y,
         i_this->mAcch.GetGroundH(),
         i_this->mAcch.m_gnd,
         &i_this->actor.tevStr
