@@ -426,17 +426,15 @@ void GXSetVtxAttrFmtv(GXVtxFmt format, GXVtxAttrFmtList* list) {
 }
 
 void __GXSetVAT(void) {
-    u32 i = 0;
-    u32 dirtyVAT = gx->dirtyVAT;
-    do {
-        if (dirtyVAT & (1)) {
+    u8 i;
+
+    for (i = 0; i < 8; i++) {
+        if (gx->dirtyVAT & (1 << i)) {
             GX_CP_LOAD_REG(GX_CP_REG_VAT_GRP0 | i, gx->vatA[i]);
             GX_CP_LOAD_REG(GX_CP_REG_VAT_GRP1 | i, gx->vatB[i]);
             GX_CP_LOAD_REG(GX_CP_REG_VAT_GRP2 | i, gx->vatC[i]);
         }
-        dirtyVAT >>= 1;
-        i++;
-    } while (dirtyVAT != 0);
+    }
 
     gx->dirtyVAT = 0;
 }
