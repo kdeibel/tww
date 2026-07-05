@@ -157,8 +157,8 @@ GXFifoObj* GXInit(void* base, u32 size) {
 
     SET_REG_FIELD(gx->cpTex, 2, 7, 2);
 
-    gx->zScale = 1.6777216E7f;
-    gx->zOffset = 0.0f;
+    gx->fgSideX = 1.6777216E7f;
+    gx->fgRangeAdjOn = 0;
 
     gx->dirtyState = 0;
     gx->dirtyVAT = 0;

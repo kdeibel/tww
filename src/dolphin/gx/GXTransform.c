@@ -239,43 +239,59 @@ void GXLoadTexMtxImm(const Mtx mtx, u32 id, GXTexMtxType type) {
     }
 }
 
-void __GXSetViewport(void) {
-    f32 a, b, c, d, e, f;
-    f32 near, far;
+void GXSetViewportJitter(f32 left, f32 top, f32 wd, f32 ht, f32 nearz, f32 farz, u32 field) {
+    f32 sx;
+    f32 oz;
+    f32 sy;
+    f32 sz;
+    f32 ox;
+    f32 oy;
+    u8 unused[8];
 
-    a = gx->vpWd / 2;
-    b = -gx->vpHt / 2;
-    d = gx->vpLeft + (gx->vpWd / 2) + 342.0f;
-    e = gx->vpTop + (gx->vpHt / 2) + 342.0f;
+    if (field == 0) {
+        top -= 0.5f;
+    }
 
-    near = gx->vpNearz * gx->zScale;
-    far = gx->vpFarz * gx->zScale;
+    sx = wd / 2.0f;
+    sy = -ht / 2.0f;
+    ox = 342.0f + (left + wd / 2.0f);
+    oy = 342.0f + (top + ht / 2.0f);
+    oz = 16777215.0f * farz;
+    sz = oz - (16777215.0f * nearz);
 
-    c = far - near;
-    f = far + gx->zOffset;
-
-    GX_XF_LOAD_REGS(5, GX_XF_REG_SCALEX);
-    GXFIFO.f32 = a;
-    GXFIFO.f32 = b;
-    GXFIFO.f32 = c;
-    GXFIFO.f32 = d;
-    GXFIFO.f32 = e;
-    GXFIFO.f32 = f;
-}
-
-void GXSetViewport(f32 left, f32 top, f32 width, f32 height, f32 nearZ, f32 farZ) {
     gx->vpLeft = left;
     gx->vpTop = top;
-    gx->vpWd = width;
-    gx->vpHt = height;
-    gx->vpNearz = nearZ;
-    gx->vpFarz = farZ;
-    __GXSetViewport();
+    gx->vpWd = wd;
+    gx->vpHt = ht;
+    gx->vpNearz = nearz;
+    gx->vpFarz = farz;
+
+    if (gx->fgRangeAdjOn) {
+        __GXSetRange(nearz, gx->fgSideX);
+    }
+
+    GX_XF_LOAD_REGS(5, GX_XF_REG_SCALEX);
+    GXFIFO.f32 = sx;
+    GXFIFO.f32 = sy;
+    GXFIFO.f32 = sz;
+    GXFIFO.f32 = ox;
+    GXFIFO.f32 = oy;
+    GXFIFO.f32 = oz;
+
     gx->bpSentNot = GX_TRUE;
 }
 
+void GXSetViewport(f32 left, f32 top, f32 width, f32 height, f32 nearZ, f32 farZ) {
+    GXSetViewportJitter(left, top, width, height, nearZ, farZ, 1);
+}
+
 void GXGetViewportv(f32* p) {
-    Copy6Floats(&gx->vpLeft, p);
+    p[0] = gx->vpLeft;
+    p[1] = gx->vpTop;
+    p[2] = gx->vpWd;
+    p[3] = gx->vpHt;
+    p[4] = gx->vpNearz;
+    p[5] = gx->vpFarz;
 }
 
 void GXSetScissor(u32 left, u32 top, u32 width, u32 height) {

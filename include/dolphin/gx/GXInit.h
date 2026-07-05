@@ -103,8 +103,8 @@ typedef struct _GXData {
     /* 0x448 */ f32 vpHt;
     /* 0x44C */ f32 vpNearz;
     /* 0x450 */ f32 vpFarz;
-    /* 0x454 */ f32 zOffset;
-    /* 0x458 */ f32 zScale;
+    /* 0x454 */ GXBool fgRangeAdjOn;
+    /* 0x458 */ f32 fgSideX;
 
     // Texture regs
     /* 0x45C */ u32 tImage0[8];
