@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import forge
 
 QUEUE = os.path.join(forge.ROOT, "forge", "queue")
+TICKET = os.path.expanduser("~/Soma/.autoloop/now-ticket.json")
 LOG = os.path.join(forge.ROOT, "forge", "autoloop.log")
 STATE = os.path.join(forge.ROOT, "forge", "autoloop-state.json")
 MAX_ROUNDS_PER_SYMBOL = 2   # each round = 3 ollama attempts inside forge
@@ -39,6 +40,31 @@ def log(msg):
         f.write(line + "\n")
 
 
+_ticket = {"source": "tww-decomp", "title": "TWW decomp autoloop", "state": "running",
+           "detail": "", "item": "", "recent": [], "done": 0, "total": 0, "wins": 0, "queue": 0}
+
+
+def ticket(**kw):
+    """Publish live in-progress state for the Soma Core ticket panel."""
+    _ticket.update(kw)
+    _ticket["at"] = datetime.datetime.now().isoformat(timespec="seconds")
+    try:
+        _ticket["queue"] = len([f for f in os.listdir(QUEUE) if f.endswith(".md")])
+    except Exception:
+        pass
+    try:
+        tmp = TICKET + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(_ticket, f)
+        os.replace(tmp, TICKET)
+    except Exception:
+        pass
+
+
+def recent(line):
+    _ticket["recent"] = (_ticket.get("recent") or [])[-5:] + [line]
+
+
 def gpu_busy():
     try:
         out = subprocess.run(
@@ -47,6 +73,29 @@ def gpu_busy():
         return int(out.splitlines()[0]) > GPU_MAX_MB
     except Exception:
         return False
+
+
+def pool_blocked(t):
+    """True when the function's code is already byte-perfect and only literal-pool
+    symbol ordering differs (objdiff data_value view == 100%) — no source edit can
+    improve it until the unit's other stubs are matched. Not a real target."""
+    out = os.path.join(forge.ROOT, "build", "fndiff-loop.json")
+    r = forge.run([forge.OBJDIFF_DIFF, "diff", "-p", ".", "-u", t["unit"], t["symbol"],
+                   "-c", "functionRelocDiffs=data_value", "-o", out, "--format", "json"])
+    if r.returncode != 0:
+        return False
+    try:
+        with open(out) as f:
+            d = json.load(f)
+        for sec in d["right"].get("sections", []):
+            if sec.get("kind") != "SECTION_TEXT":
+                continue
+            for s in sec.get("symbols", []):
+                if ((s.get("symbol") or {}).get("name")) == t["symbol"]:
+                    return s.get("match_percent") == 100.0
+    except Exception:
+        pass
+    return False
 
 
 def load_state():
@@ -65,25 +114,48 @@ def one_pass():
     state = load_state()
     cfg = forge.load_config()
     targets = forge.scan()
-    log("pass start: %d targets, model=%s" % (len(targets), cfg["ollama_model"]))
+    todo = [t for t in targets
+            if state["tries"].get(t["symbol"], 0) < MAX_ROUNDS_PER_SYMBOL and t["symbol"] not in SKIP]
+    log("pass start: %d targets (%d to try), model=%s" % (len(targets), len(todo), cfg["ollama_model"]))
+    if cfg.get("model_note"):
+        log("SOMA: " + cfg["model_note"])
+    forge.soma_checkin("TWW autoloop pass start: %d targets (%d to try), model=%s%s"
+                       % (len(targets), len(todo), cfg["ollama_model"],
+                          " [" + cfg["model_note"] + "]" if cfg.get("model_note") else ""))
+    ticket(state="running", total=len(todo), done=0, wins=len(state["wins"]),
+           detail="model %s · %d targets" % (cfg["ollama_model"], len(todo)))
     wins = 0
-    for t in targets:
+    for n, t in enumerate(todo):
         key = t["symbol"]
         tries = state["tries"].get(key, 0)
-        if tries >= MAX_ROUNDS_PER_SYMBOL or key in SKIP:
-            continue
+        while os.path.exists(os.path.join(forge.ROOT, "forge", "PAUSE")):
+            ticket(state="paused (forge/PAUSE flag)")
+            time.sleep(15)
         while gpu_busy():
             log("GPU busy, waiting 120s")
+            ticket(state="waiting-gpu")
             time.sleep(120)
+        if pool_blocked(t):
+            log("pool-blocked (code already exact, literal pool awaits unit stubs): %s" % t["demangled"][:70])
+            state["tries"][key] = MAX_ROUNDS_PER_SYMBOL
+            save_state(state)
+            ticket(done=n + 1)
+            continue
         log("try #%d %6.2f%% %4db %s" % (tries + 1, t["match"], t["size"], t["demangled"][:70]))
-        result = forge.ollama_attempt(t, cfg)
+        ticket(state="matching", done=n, item="%s (%db, %.2f%%)" % (t["demangled"][:60], t["size"], t["match"]))
+        try:
+            result = forge.ollama_attempt(t, cfg)
+        except Exception as e:
+            result = ["attempt crashed: %r" % e]
         for line in result:
             log("    " + line)
+            recent(("%s: " % t["demangled"][:28]) + line.strip()[:90])
         state["tries"][key] = tries + 1
         if any("MATCHED" in l for l in result):
             wins += 1
             state["wins"].append(key)
             log("*** WIN %s (kept in working tree, needs review+commit)" % key)
+            ticket(wins=len(state["wins"]))
         else:
             try:
                 with open(os.path.join(QUEUE, key[:80] + ".md"), "w") as f:
@@ -91,7 +163,10 @@ def one_pass():
             except Exception as e:
                 log("packet write failed: %s" % e)
         save_state(state)
+        ticket(done=n + 1)
     log("pass done: %d wins this pass, %d total" % (wins, len(state["wins"])))
+    forge.soma_checkin("TWW autoloop pass done: %d wins this pass, %d total matched" % (wins, len(state["wins"])))
+    ticket(state="idle (between passes)", item="", detail="next pass in %ds" % PASS_SLEEP)
     return wins
 
 

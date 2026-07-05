@@ -31,18 +31,84 @@ PORT = 7878
 
 DEFAULT_CONFIG = {
     "ollama_url": "http://localhost:11434",
-    # Soma hands champion — the 12GB card fits one 9B q8; a 14B default both
-    # bypasses the Soma fleet and risks VRAM pressure (config.json overrides).
+    # Resolved through the Soma fleet (soma_fleet() below); this literal is the last-resort
+    # fallback only. Forge processes run SOMA MODELS ONLY — operator rule, 2026-07-04.
     "ollama_model": "qwable:q8-fable",
     "max_function_size": 400,
     "min_match_percent": 50,
 }
+
+# ---------------------------------------------------------------- soma seam
+# This loop is a Soma-conducted job: the model comes from the Soma fleet roster and
+# lifecycle events land in the spine ledger. Loop still runs if the spine is down.
+
+SOMA_SPN = os.environ.get("SOMA_SPINE_ENDPOINT", "http://127.0.0.1:7900")
+_SOMA_FLEET_FALLBACK = {
+    "mind": "qwythos:9b", "hands": "qwable:q8-fable",
+    "hands_light": "qwable:q4-fable", "embed": "nomic-embed-text",
+    "allowed_prefixes": ["qwythos", "qwable", "soma-engram", "nomic-embed-text"],
+}
+
+def _soma_token():
+    try:
+        with open(os.path.expanduser("~/Soma/.soma/controller.token")) as f:
+            return f.read().strip()
+    except Exception:
+        return ""
+
+def _spn_invoke(tool, args, confirm=None, timeout=8):
+    import urllib.request
+    body = {"args": args, "role": "maintainer", "mode": "supervised"}
+    if confirm:
+        body["confirm"] = confirm
+    req = urllib.request.Request(
+        SOMA_SPN.rstrip("/") + "/spn/tools/%s/invoke" % tool,
+        data=json.dumps(body).encode(),
+        headers={"Content-Type": "application/json",
+                 "Authorization": "Bearer " + _soma_token()})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return json.loads(resp.read())
+
+def soma_fleet():
+    """Fleet roster: spine tool if up, else ~/Soma/.soma/fleet.json, else builtins."""
+    try:
+        r = _spn_invoke("spn_fleet", {})
+        f = r.get("result") or {}
+        if f.get("hands"):
+            return f
+    except Exception:
+        pass
+    try:
+        with open(os.path.expanduser("~/Soma/.soma/fleet.json")) as f:
+            return {**_SOMA_FLEET_FALLBACK, **json.load(f)}
+    except Exception:
+        return dict(_SOMA_FLEET_FALLBACK)
+
+def soma_allowed(model, fleet):
+    return any(model.startswith(p) for p in
+               (fleet.get("allowed_prefixes") or _SOMA_FLEET_FALLBACK["allowed_prefixes"]))
+
+def soma_checkin(note):
+    """Two-step confirm-gated ledger event. Best-effort: never blocks the loop."""
+    try:
+        r = _spn_invoke("spn_checkin", {"note": note, "scope": "tww"})
+        tok = ((r.get("decision") or {}).get("confirm"))
+        if tok:
+            _spn_invoke("spn_checkin", {"note": note, "scope": "tww"}, confirm=tok)
+        return True
+    except Exception:
+        return False
 
 def load_config():
     cfg = dict(DEFAULT_CONFIG)
     if os.path.exists(CONFIG):
         with open(CONFIG) as f:
             cfg.update(json.load(f))
+    fleet = soma_fleet()
+    if not soma_allowed(cfg["ollama_model"], fleet):
+        wanted = cfg["ollama_model"]
+        cfg["ollama_model"] = fleet.get("hands") or _SOMA_FLEET_FALLBACK["hands"]
+        cfg["model_note"] = "non-Soma model %r overridden to fleet hands %r" % (wanted, cfg["ollama_model"])
     return cfg
 
 def num(x):
@@ -196,9 +262,9 @@ def attempt(src_rel, unit, symbol, new_body):
     if not new_body.endswith("\n"):
         new_body += "\n"
     candidate = original[:span[0]] + new_body + original[span[1] + 1:]
-    with open(p, "w", newline="", encoding="latin-1") as f:
-        f.write(candidate)
     try:
+        with open(p, "w", newline="", encoding="latin-1") as f:
+            f.write(candidate)
         r = run(["ninja", obj_path(unit)])
         if r.returncode != 0:
             with open(p, "w", newline="", encoding="latin-1") as f:
@@ -273,6 +339,7 @@ def ollama_attempt(t, cfg):
         except Exception as e:
             return log + [f"Ollama unavailable: {e}"]
         body = re.sub(r"^```[a-z+]*\n?|```$", "", body.strip(), flags=re.M).strip("\n")
+        body = body.encode("latin-1", errors="replace").decode("latin-1")
         body = "\n".join("    " + ln if ln and not ln.startswith(" ") else ln
                          for ln in body.splitlines())
         score, msg = attempt(t["src"], t["unit"], t["symbol"], body)
