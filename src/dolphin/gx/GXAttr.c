@@ -121,30 +121,47 @@ void GXSetVtxDescv(GXVtxDescList* list) {
 }
 
 static void __GXXfVtxSpecs(void) {
-    u32 normCount, colorCount, texCount;
+    u32 vcdLo, vcdHi;
+    u32 nCols, nNrms, nTex;
 
-    normCount = gx->hasBiNrms ? 2 : (gx->hasNrms ? 1 : 0);
+    u32 a, b;
 
-    // Both fields in one access
-    colorCount = 33 - __cntlzw((gx->vcdLo & (0xf << 0xd)) >> 0xd);
-    colorCount /= 2;  // equivalent to /=2 and >>= 1
+    vcdLo = gx->vcdLo;
+    a = ((vcdLo >> 13) & 3) ? 1 : 0;
+    b = ((vcdLo >> 15) & 3) ? 1 : 0;
+    nCols = a + b;
 
-    // All 16 assigned bits in VCD_Hi
-    texCount = 33 - __cntlzw((gx->vcdHi & (0xffff << 0)) >> 0);
-    texCount /= 2;  // equivalent to /=2 and >>= 1
+    nNrms = gx->hasBiNrms ? 2 : (gx->hasNrms ? 1 : 0);
 
-    GX_XF_LOAD_REG(GX_XF_REG_INVERTEXSPEC, (colorCount) | (normCount << 2) | (texCount << 4));
+    vcdHi = gx->vcdHi;
+    a = ((vcdHi >> 0) & 3) ? 1 : 0;
+    b = ((vcdHi >> 2) & 3) ? 1 : 0;
+    nTex = a + b;
+    a = ((vcdHi >> 4) & 3) ? 1 : 0;
+    nTex = nTex + a;
+    a = ((vcdHi >> 6) & 3) ? 1 : 0;
+    nTex = nTex + a;
+    a = ((vcdHi >> 8) & 3) ? 1 : 0;
+    nTex = nTex + a;
+    a = ((vcdHi >> 10) & 3) ? 1 : 0;
+    nTex = nTex + a;
+    a = ((vcdHi >> 12) & 3) ? 1 : 0;
+    nTex = nTex + a;
+    a = ((vcdHi >> 14) & 3) ? 1 : 0;
+    nTex = nTex + a;
+
+    GX_XF_LOAD_REG(GX_XF_REG_INVERTEXSPEC, (nTex << 4) | (nCols | (nNrms << 2)));
     gx->bpSentNot = GX_TRUE;
-
-    return;
 }
 
+#pragma dont_inline on
 void __GXSetVCD(void) {
     GX_CP_LOAD_REG(GX_CP_REG_VCD_LO, gx->vcdLo);
     GX_CP_LOAD_REG(GX_CP_REG_VCD_HI, gx->vcdHi);
 
     __GXXfVtxSpecs();
 }
+#pragma dont_inline reset
 
 void __GXCalculateVLim(void) {
     static u8 tbl1[] = {0, 4, 1, 2};
@@ -582,21 +599,27 @@ void GXGetVtxAttrFmt(GXVtxFmt param_0, int param_1, GXCompCnt* param_2, GXCompTy
 }
 
 void GXSetArray(GXAttr attr, void* basePtr, u8 stride) {
-    s32 newAttr;
-    s32 attrReg;
+    s32 cpAttr;
+    s32 idx;
 
-    newAttr = attr;
-    if (newAttr == GX_VA_NBT) {
-        newAttr = GX_VA_NRM;
+    if (attr == GX_VA_NBT) {
+        attr = GX_VA_NRM;
     }
 
-    attrReg = newAttr - GX_VA_POS;
+    cpAttr = attr - GX_VA_POS;
+    basePtr = (void*)((u32)basePtr & 0x3FFFFFFF);
 
-    GX_CP_LOAD_REG(GX_BP_REG_SETMODE0_TEX4 | attrReg,
-                   // Address -> offset?
-                   (u32)basePtr & ~0xC0000000);
+    GX_CP_LOAD_REG(GX_BP_REG_SETMODE0_TEX4 | cpAttr, (u32)basePtr);
+    if (cpAttr - 12 >= 0 && cpAttr - 12 < 4) {
+        s32 idx = cpAttr - 12;
+        gx->indexBase[idx] = (u32)basePtr;
+    }
 
-    GX_CP_LOAD_REG(GX_BP_REG_SETIMAGE2_TEX4 | attrReg, stride);
+    GX_CP_LOAD_REG(GX_BP_REG_SETIMAGE2_TEX4 | cpAttr, stride);
+    if (cpAttr - 12 >= 0 && cpAttr - 12 < 4) {
+        s32 idx = cpAttr - 12;
+        gx->indexStride[idx] = stride;
+    }
 }
 
 void GXInvalidateVtxCache(void) {
