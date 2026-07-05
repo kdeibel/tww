@@ -260,8 +260,9 @@ void GXSetChanMatColor(GXChannelID channel, GXColor color) {
 }
 
 void GXSetNumChans(u8 count) {
-    GX_SET_REG(gx->genMode, count, 25, 27);
-    GX_XF_LOAD_REG(GX_XF_REG_NUMCOLORS, count);
+    u32 c = count;
+    GX_SET_REG(gx->genMode, c, 25, 27);
+    GX_XF_LOAD_REG(GX_XF_REG_NUMCOLORS, c);
     gx->dirtyState |= GX_DIRTY_GEN_MODE;
 }
 
