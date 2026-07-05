@@ -66,81 +66,81 @@ void GXSetTevOp(GXTevStageID stage, GXTevMode mode) {
 
 void GXSetTevColorIn(GXTevStageID stage, GXTevColorArg a, GXTevColorArg b, GXTevColorArg c,
                      GXTevColorArg d) {
-    u32 tevReg;
+    u32 reg;
+    u32 reg2;
 
-    tevReg = gx->tevc[stage];
+    reg = gx->tevc[stage];
+    reg = __rlwimi(reg, a, 12, 16, 19);
+    reg2 = __rlwimi(__rlwimi(__rlwimi(reg, b, 8, 20, 23), c, 4, 24, 27), d, 0, 28, 31);
 
-    SET_REG_FIELD(tevReg, 4, 12, 2);
-    SET_REG_FIELD(tevReg, 4, 8, 2);
-    SET_REG_FIELD(tevReg, 4, 4, 2);
-    SET_REG_FIELD(tevReg, 4, 0, 2);
+    GX_BP_LOAD_REG(reg2);
 
-    GFWriteBPCmd(tevReg);
-
-    gx->tevc[stage] = tevReg;
+    gx->tevc[stage] = reg2;
     gx->bpSentNot = GX_FALSE;
 }
 
 void GXSetTevAlphaIn(GXTevStageID stage, GXTevAlphaArg a, GXTevAlphaArg b, GXTevAlphaArg c,
                      GXTevAlphaArg d) {
-    u32 tevReg;
+    u32 reg;
+    u32 reg2;
 
-    tevReg = gx->teva[stage];
+    reg = gx->teva[stage];
+    reg = __rlwimi(reg, a, 13, 16, 18);
+    reg2 = __rlwimi(__rlwimi(__rlwimi(reg, b, 10, 19, 21), c, 7, 22, 24), d, 4, 25, 27);
 
-    SET_REG_FIELD(tevReg, 3, 13, 2);
-    SET_REG_FIELD(tevReg, 3, 10, 2);
-    SET_REG_FIELD(tevReg, 3, 7, 2);
-    SET_REG_FIELD(tevReg, 3, 4, 2);
+    GX_BP_LOAD_REG(reg2);
 
-    GFWriteBPCmd(tevReg);
-
-    gx->teva[stage] = tevReg;
+    gx->teva[stage] = reg2;
     gx->bpSentNot = GX_FALSE;
 }
 
 void GXSetTevColorOp(GXTevStageID stage, GXTevOp op, GXTevBias bias, GXTevScale scale,
                      GXBool doClamp, GXTevRegID outReg) {
-    u32 tevReg;
+    u32 reg;
+    u32 reg2;
 
-    tevReg = gx->tevc[stage];
-    SET_REG_FIELD(tevReg, 1, 18, 2);
+    reg = gx->tevc[stage];
+    reg = __rlwimi(reg, op, 18, 13, 13);
+    reg2 = reg;
 
     if (op <= GX_TEV_SUB) {
-        SET_REG_FIELD(tevReg, 2, 20, 2);
-        SET_REG_FIELD(tevReg, 2, 16, 2);
+        reg2 = __rlwimi(reg2, scale, 20, 10, 11);
+        reg2 = __rlwimi(reg2, bias, 16, 14, 15);
     } else {
-        SET_REG_FIELD(tevReg, 2, 20, 2);
-        SET_REG_FIELD(tevReg, 2, 16, 2);
+        reg2 = __rlwimi(reg2, op, 19, 10, 11);
+        reg2 = __rlwimi(reg2, 3, 16, 14, 15);
     }
 
-    SET_REG_FIELD(tevReg, 1, 19, 2);
-    SET_REG_FIELD(tevReg, 2, 22, 2);
+    reg2 = __rlwimi(reg2, doClamp, 19, 12, 12);
+    reg2 = __rlwimi(reg2, outReg, 22, 8, 9);
 
-    GFWriteBPCmd(tevReg);
-    gx->tevc[stage] = tevReg;
+    GX_BP_LOAD_REG(reg2);
+    gx->tevc[stage] = reg2;
     gx->bpSentNot = GX_FALSE;
 }
 
 void GXSetTevAlphaOp(GXTevStageID stage, GXTevOp op, GXTevBias bias, GXTevScale scale,
                      GXBool doClamp, GXTevRegID outReg) {
-    u32 tevReg;
+    u32 reg;
+    u32 reg2;
 
-    tevReg = gx->teva[stage];
-    SET_REG_FIELD(tevReg, 1, 18, 2);
+    reg = gx->teva[stage];
+    reg = __rlwimi(reg, op, 18, 13, 13);
+    reg2 = reg;
 
     if (op <= GX_TEV_SUB) {
-        SET_REG_FIELD(tevReg, 2, 20, 2);
-        SET_REG_FIELD(tevReg, 2, 16, 2);
+        reg2 = __rlwimi(reg2, scale, 20, 10, 11);
+        reg2 = __rlwimi(reg2, bias, 16, 14, 15);
     } else {
-        SET_REG_FIELD(tevReg, 2, 20, 2);
-        SET_REG_FIELD(tevReg, 2, 16, 2);
+        reg2 = __rlwimi(reg2, op, 19, 10, 11);
+        reg2 = __rlwimi(reg2, 3, 16, 14, 15);
     }
 
-    SET_REG_FIELD(tevReg, 1, 19, 2);
-    SET_REG_FIELD(tevReg, 2, 22, 2);
+    reg2 = __rlwimi(reg2, doClamp, 19, 12, 12);
+    reg2 = __rlwimi(reg2, outReg, 22, 8, 9);
 
-    GFWriteBPCmd(tevReg);
-    gx->teva[stage] = tevReg;
+    GX_BP_LOAD_REG(reg2);
+    gx->teva[stage] = reg2;
     gx->bpSentNot = GX_FALSE;
 }
 
