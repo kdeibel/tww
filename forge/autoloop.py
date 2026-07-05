@@ -107,7 +107,11 @@ _permuter = {"proc": None, "sym": None}
 def maybe_permute(t, best_pct):
     """Near-miss hook: schedule a background decomp-permuter run (one at a time,
     CPU-only — no GPU contention). Candidates land in
-    tools/permuter/scratch/<symbol>/output-* for review."""
+    tools/permuter/scratch/<symbol>/output-* for review.
+    C units only — the permuter's randomizer is pycparser-based and cannot
+    parse C++ (class/namespace in the preprocessed base.c)."""
+    if not (t.get("src") or "").endswith(".c"):
+        return
     p = _permuter["proc"]
     if p is not None and p.poll() is None:
         return

@@ -65,11 +65,16 @@ def main():
         if a == "-c": pre.append("-E"); continue
         if a == "-o": skip = True; continue
         pre.append(a)
-    r = subprocess.run(pre, capture_output=True, text=True, cwd=ROOT)
-    if r.returncode != 0 or not r.stdout.strip():
-        sys.exit("mwcc -E preprocess failed:\n" + r.stderr[-2000:])
+    # tree is byte-preserving latin-1 (Japanese literals) — never decode as utf-8
+    r = subprocess.run(pre, capture_output=True, cwd=ROOT)
+    out = r.stdout.decode("latin-1")
+    if r.returncode != 0 or not out.strip():
+        sys.exit("mwcc -E preprocess failed:\n" + r.stderr.decode("latin-1")[-2000:])
+    # permuter re-runs host cpp on base.c and decodes utf-8; squash every high
+    # byte to '?' (1:1 width, string-literal sizes preserved)
+    out = "".join(c if ord(c) < 128 else "?" for c in out)
     with open(os.path.join(scratch, "base.c"), "w") as f:
-        f.write(r.stdout.replace("\r\n", "\n"))
+        f.write(out.replace("\r\n", "\n"))
     shutil.copy(target_o, os.path.join(scratch, "target.o"))
     with open(os.path.join(scratch, "compile.sh"), "w") as f:
         f.write("#!/bin/sh\ncd %s\n%s\n" % (shlex.quote(ROOT), " ".join(out)))
