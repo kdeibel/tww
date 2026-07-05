@@ -198,6 +198,14 @@ def one_pass():
         ticket(done=n + 1)
     log("pass done: %d wins this pass, %d total" % (wins, len(state["wins"])))
     forge.soma_checkin("TWW autoloop pass done: %d wins this pass, %d total matched" % (wins, len(state["wins"])))
+    # Fold any new matched trajectories into the decomp SFT dataset (corpus ingestion).
+    # Trajectory-only refresh: fast, merges (keeps the harvest), never blocks the loop.
+    try:
+        subprocess.Popen(
+            [sys.executable, os.path.join(forge.ROOT, "forge", "export-sft.py"), "--no-harvest"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=forge.ROOT)
+    except Exception as e:
+        log("sft export skipped: %s" % e)
     ticket(state="idle (between passes)", item="", detail="next pass in %ds" % PASS_SLEEP)
     return wins
 

@@ -269,8 +269,12 @@ def find_function_span(text, symbol):
     m = re.search(r"/\*[^*]*\.text\s+" + re.escape(symbol) + r"\s*\*/", text)
     if not m:
         return None
-    brace = text.index("{", m.end())
-    end = text.index("\n}", brace)
+    brace = text.find("{", m.end())
+    if brace == -1:
+        return None
+    end = text.find("\n}", brace)
+    if end == -1:
+        return None
     return brace + 1, end
 
 def get_function_source(src_rel, symbol):
@@ -331,10 +335,11 @@ M2C_CACHE = os.path.join(ROOT, "build", "m2c")
 # below this match %, the m2c machine draft is a better seed than our current C
 M2C_SEED_BELOW = 60.0
 
-def m2c_draft(unit, symbol):
-    """Machine-decompiled seed C for one function: dtk elf disasm (cached per unit)
-    -> .fn block -> m2c --target ppc-mwcc-c. Returns C text or None on any failure."""
-    if not (os.path.exists(M2C) and os.path.exists(DTK)):
+def fn_asm(unit, symbol):
+    """The target's disassembled .fn block for one function (dtk elf disasm, cached
+    per unit). Returns the block as a string, or None. Shared by m2c_draft and the
+    SFT exporter — this is the model INPUT side of the asm->C training pair."""
+    if not os.path.exists(DTK):
         return None
     tail = "/".join(unit.split("/")[1:])
     obj = os.path.join(ROOT, "build", "GZLE01", "obj", tail + ".o")
@@ -354,11 +359,20 @@ def m2c_draft(unit, symbol):
                 block.append(line)
                 if line.startswith(".endfn %s" % symbol):
                     break
+    return "".join(block) if block else None
+
+
+def m2c_draft(unit, symbol):
+    """Machine-decompiled seed C for one function: dtk elf disasm (cached per unit)
+    -> .fn block -> m2c --target ppc-mwcc-c. Returns C text or None on any failure."""
+    if not (os.path.exists(M2C) and os.path.exists(DTK)):
+        return None
+    block = fn_asm(unit, symbol)
     if not block:
         return None
     fn_s = os.path.join(M2C_CACHE, "fn-%s.s" % re.sub(r"[^A-Za-z0-9_]", "_", symbol)[:80])
     with open(fn_s, "w") as f:
-        f.writelines(block)
+        f.write(block)
     try:
         r = run([sys.executable, M2C, "--target", "ppc-mwcc-c", fn_s], timeout=60)
     except subprocess.TimeoutExpired:
