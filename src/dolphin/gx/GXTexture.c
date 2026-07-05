@@ -250,6 +250,10 @@ void GXInitTexObjLOD(GXTexObj* obj, GXTexFilter minFilter, GXTexFilter maxFilter
     GX_SET_REG(internal->texture_lod, reg2, 16, 23);
 }
 
+void* GXGetTexObjData(GXTexObj* obj) {
+    return (void*)((obj->texture_address << 5) & 0x03FFFFE0);
+}
+
 u16 GXGetTexObjWidth(const GXTexObj* obj) {
     return (obj->texture_size & 0x3ff) + 1;
 }
@@ -318,10 +322,9 @@ void GXInitTlutObj(GXTlutObj* obj, void* table, GXTlutFmt format, u16 numEntries
     GXTlutObj* internal = (GXTlutObj*)obj;
 
     internal->format = 0;
-
-    GX_SET_REG(internal->format, format, 20, 21);
-    GX_SET_REG(internal->address, (u32)table >> 5, 11, 31);
-    GX_SET_REG(internal->address, 100, 0, 7);
+    internal->format = (internal->format & 0xfffff3ff) | (format << 10);
+    internal->address = (internal->address & 0xffe00000) | (((u32)table >> 5) & 0x1ffffff);
+    internal->address = (internal->address & 0xffffff) | 0x64000000;
 
     internal->numEntries = numEntries;
 }
@@ -339,7 +342,7 @@ void GXLoadTlut(GXTlutObj* obj, u32 tlut_name) {
     __GXFlushTextureState();
 
     reg = ret->unk0;
-    GX_SET_REG(internal->format, reg, 22, 31);
+    internal->format = (internal->format & 0xfffffc00) | (reg & 0x3ff);
 
     ret->tlutObj = *internal;
 }
@@ -423,7 +426,27 @@ GXTlutRegionCallback GXSetTlutRegionCallback(GXTlutRegionCallback callback) {
 }
 
 void GXSetTexCoordScaleManually(GXTexCoordID coord, GXBool enable, u16 s_scale, u16 t_scale) {
-    /* Nonmatching */
+    gx->tcsManEnab = (gx->tcsManEnab & ~(1 << coord)) | (enable << coord);
+
+    if (enable) {
+        gx->suTs0[coord] = __rlwimi((u16)(s_scale - 1), gx->suTs0[coord], 0, 0, 15);
+        gx->suTs1[coord] = (gx->suTs1[coord] & 0xffff0000) | (u16)(t_scale - 1);
+
+        GX_BP_LOAD_REG(gx->suTs0[coord]);
+        GX_BP_LOAD_REG(gx->suTs1[coord]);
+        gx->bpSentNot = GX_FALSE;
+    }
+}
+
+void GXSetTexCoordBias(GXTexCoordID coord, GXBool s_enable, GXBool t_enable) {
+    GX_SET_REG(gx->suTs0[coord], s_enable, 15, 15);
+    GX_SET_REG(gx->suTs1[coord], t_enable, 15, 15);
+
+    if (gx->tcsManEnab & (1 << coord)) {
+        GX_BP_LOAD_REG(gx->suTs0[coord]);
+        GX_BP_LOAD_REG(gx->suTs1[coord]);
+        gx->bpSentNot = GX_FALSE;
+    }
 }
 
 void __SetSURegs(u32 texImgIndex, u32 setUpRegIndex) {
