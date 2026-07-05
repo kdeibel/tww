@@ -31,7 +31,9 @@ PORT = 7878
 
 DEFAULT_CONFIG = {
     "ollama_url": "http://localhost:11434",
-    "ollama_model": "qwen2.5-coder:14b",
+    # Soma hands champion — the 12GB card fits one 9B q8; a 14B default both
+    # bypasses the Soma fleet and risks VRAM pressure (config.json overrides).
+    "ollama_model": "qwable:q8-fable",
     "max_function_size": 400,
     "min_match_percent": 50,
 }
