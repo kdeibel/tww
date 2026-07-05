@@ -285,6 +285,48 @@ def attempt(src_rel, unit, symbol, new_body):
 
 # ---------------------------------------------------------------- work packet
 
+DTK = os.path.join(ROOT, "build", "tools", "dtk")
+M2C = os.path.join(ROOT, "tools", "m2c", "m2c.py")
+M2C_CACHE = os.path.join(ROOT, "build", "m2c")
+# below this match %, the m2c machine draft is a better seed than our current C
+M2C_SEED_BELOW = 60.0
+
+def m2c_draft(unit, symbol):
+    """Machine-decompiled seed C for one function: dtk elf disasm (cached per unit)
+    -> .fn block -> m2c --target ppc-mwcc-c. Returns C text or None on any failure."""
+    if not (os.path.exists(M2C) and os.path.exists(DTK)):
+        return None
+    tail = "/".join(unit.split("/")[1:])
+    obj = os.path.join(ROOT, "build", "GZLE01", "obj", tail + ".o")
+    if not os.path.exists(obj):
+        return None
+    os.makedirs(M2C_CACHE, exist_ok=True)
+    asm = os.path.join(M2C_CACHE, tail.replace("/", "_") + ".s")
+    if not os.path.exists(asm) or os.path.getmtime(asm) < os.path.getmtime(obj):
+        if run([DTK, "elf", "disasm", obj, asm]).returncode != 0:
+            return None
+    block, on = [], False
+    with open(asm, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            if line.startswith(".fn %s," % symbol):
+                on = True
+            if on:
+                block.append(line)
+                if line.startswith(".endfn %s" % symbol):
+                    break
+    if not block:
+        return None
+    fn_s = os.path.join(M2C_CACHE, "fn-%s.s" % re.sub(r"[^A-Za-z0-9_]", "_", symbol)[:80])
+    with open(fn_s, "w") as f:
+        f.writelines(block)
+    try:
+        r = run([sys.executable, M2C, "--target", "ppc-mwcc-c", fn_s], timeout=60)
+    except subprocess.TimeoutExpired:
+        return None
+    if r.returncode != 0 or not r.stdout.strip():
+        return None
+    return r.stdout.strip()
+
 def make_packet(t):
     d, _ = diff_rows(t["unit"], t["symbol"])
     src = get_function_source(t["src"], t["symbol"]) or "(source not found)"
@@ -308,7 +350,15 @@ def make_packet(t):
             mk = (orig[i][0] if i < len(orig) else " ") or " "
             r2 = ours[i][1] if i < len(ours) else ""
             lines.append(f"{mk} {l:<36} | {r2}")
-    lines += ["```", "",
+    lines += ["```"]
+    if num(t.get("match")) < M2C_SEED_BELOW:
+        draft = m2c_draft(t["unit"], t["symbol"])
+        if draft:
+            lines += ["",
+                "## m2c machine-decompiled draft (a SEED, not the answer — control flow is",
+                "## trustworthy, but types/field names are guesses; rewrite to project style)",
+                "```c", draft, "```"]
+    lines += ["",
         "## Known tricks (docs/regalloc.md, docs/decompiling.md)",
         "- regswap: pointer temps, declaration order, avoid reassigning (use `p + 1` not `p++`)",
         "- ~75% match usually means a missing inline (check JGadget/JUT/fopAcM helpers)",
