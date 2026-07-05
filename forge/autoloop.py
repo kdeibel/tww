@@ -15,6 +15,7 @@ Log in forge/autoloop.log.
 import datetime
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -98,6 +99,28 @@ def pool_blocked(t):
     return False
 
 
+PERMUTE_AT = 94.0           # near-miss threshold: hand the fn to decomp-permuter
+PERMUTE_BUDGET = 600        # seconds per permuter run
+_permuter = {"proc": None, "sym": None}
+
+
+def maybe_permute(t, best_pct):
+    """Near-miss hook: schedule a background decomp-permuter run (one at a time,
+    CPU-only — no GPU contention). Candidates land in
+    tools/permuter/scratch/<symbol>/output-* for review."""
+    p = _permuter["proc"]
+    if p is not None and p.poll() is None:
+        return
+    logf = open(os.path.join(forge.ROOT, "forge", "permuter.log"), "a")
+    _permuter["proc"] = subprocess.Popen(
+        [sys.executable, os.path.join(forge.ROOT, "forge", "permute-fn.py"),
+         t["unit"], t["symbol"], "--run", str(PERMUTE_BUDGET)],
+        stdout=logf, stderr=subprocess.STDOUT, cwd=forge.ROOT)
+    _permuter["sym"] = t["symbol"]
+    log("permuter scheduled (%ds budget): %s at %.2f%%" % (PERMUTE_BUDGET, t["symbol"], best_pct))
+    recent("permuter: %s (%.1f%%)" % (t["demangled"][:40], best_pct))
+
+
 def load_state():
     if os.path.exists(STATE):
         with open(STATE) as f:
@@ -157,6 +180,11 @@ def one_pass():
             log("*** WIN %s (kept in working tree, needs review+commit)" % key)
             ticket(wins=len(state["wins"]))
         else:
+            best = max([float(m.group(1)) for l in result
+                        for m in [re.search(r"attempt \d+: ([\d.]+)%", l)] if m] or [0.0])
+            best = max(best, forge.num(t.get("match")))
+            if best >= PERMUTE_AT:
+                maybe_permute(t, best)
             try:
                 with open(os.path.join(QUEUE, key[:80] + ".md"), "w") as f:
                     f.write(forge.make_packet(t))
