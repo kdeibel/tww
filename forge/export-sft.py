@@ -87,7 +87,7 @@ def harvest(limit=None):
         n_units += 1
         for f in matched:
             sym = f["name"]
-            c = forge.get_function_source(src, sym)
+            c = forge.read_function(src, sym)
             if not c:
                 n_nosrc += 1
                 continue  # SDK files lack the .text marker; skip
@@ -135,6 +135,7 @@ def main():
     if do_harvest:
         print("harvesting matched pairs from report.json ...")
         recs += harvest(limit)
+        forge.save_demangle_cache()  # persist so re-harvests skip re-demangling
     elif os.path.exists(OUT):
         # trajectory-only refresh (recurring hook): keep the prior harvest, don't clobber it
         recs += [json.loads(l) for l in open(OUT, encoding="utf-8") if l.strip()]

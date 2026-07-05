@@ -288,6 +288,155 @@ def get_function_source(src_rel, symbol):
     sig_start = text.rfind("\n", 0, text.rfind("{", 0, span[0]))
     return text[sig_start + 1: span[1] + 2].replace("\r\n", "\n")
 
+
+# ---- name-based extraction (SDK / already-matched fns that lack the .text marker)
+
+_demangle_mem = None
+
+
+def demangle(symbol):
+    """CodeWarrior C++ symbol -> 'Class::method(args) const' via dtk (cached).
+    Returns None for un-demanglable / plain-C symbols."""
+    global _demangle_mem
+    cache = os.path.join(M2C_CACHE, "demangle.json")
+    if _demangle_mem is None:
+        try:
+            with open(cache) as f:
+                _demangle_mem = json.load(f)
+        except Exception:
+            _demangle_mem = {}
+    if symbol in _demangle_mem:
+        return _demangle_mem[symbol]
+    out = None
+    try:
+        r = run([DTK, "demangle", symbol])
+        if r.returncode == 0 and r.stdout.strip() and r.stdout.strip() != symbol:
+            out = r.stdout.strip()
+    except Exception:
+        pass
+    _demangle_mem[symbol] = out
+    return out
+
+
+def save_demangle_cache():
+    if _demangle_mem is None:
+        return
+    try:
+        os.makedirs(M2C_CACHE, exist_ok=True)
+        with open(os.path.join(M2C_CACHE, "demangle.json"), "w") as f:
+            json.dump(_demangle_mem, f)
+    except Exception:
+        pass
+
+
+def extract_def(text, name):
+    """Find the UNAMBIGUOUS file-scope definition of `name` (a plain identifier, a
+    `Class::method`, a `Class::~Class`, etc.) and return its full text — return-type
+    line through the closing brace. None if not found or overloaded (>1 definition:
+    skipped to keep the training corpus clean)."""
+    pat = re.compile(r"(?<![\w:~])" + re.escape(name) + r"\s*\(")
+    hits = []
+    for m in pat.finditer(text):
+        i = text.find("(", m.start())
+        depth, j = 0, i
+        while j < len(text):
+            c = text[j]
+            if c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        if j >= len(text):
+            continue
+        tail = re.match(r"\s*(?:const\s*)?\{", text[j + 1: j + 48])
+        if not tail:
+            continue  # a declaration (`;`) or a call, not a definition
+        bo = j + 1 + tail.end() - 1
+        depth, e = 0, bo
+        while e < len(text):
+            c = text[e]
+            if c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            e += 1
+        sig_start = text.rfind("\n", 0, m.start()) + 1
+        hits.append((sig_start, e + 1))
+    if len(hits) != 1:
+        return None
+    s, en = hits[0]
+    return text[s:en].replace("\r\n", "\n")
+
+
+def _class_body(text, class_name):
+    """The brace-delimited body of `class/struct <class_name>` (for in-header,
+    in-class inline method defs). Returns the body text or None."""
+    cm = re.search(r"\b(?:class|struct)\s+" + re.escape(class_name) + r"\b[^{;]*\{", text)
+    if not cm:
+        return None
+    bo = text.index("{", cm.start())
+    depth, e = 0, bo
+    while e < len(text):
+        c = text[e]
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                break
+        e += 1
+    return text[bo: e + 1]
+
+
+def read_function(src_rel, symbol):
+    """Read a matched function's C source for the corpus. Marker path first (d/
+    game code), then demangle + name-based extraction in the .cpp, then the
+    parallel header (SDK methods are often defined inline there)."""
+    src = get_function_source(src_rel, symbol)
+    if src:
+        return src
+
+    name, qualified = symbol, None
+    if "__" in symbol or not re.match(r"^[A-Za-z_]\w*$", symbol):
+        dm = demangle(symbol)
+        if not dm:
+            return None
+        name = dm.split("(")[0].strip()  # 'Class::method' / 'Class::~Class' / free fn
+        if not name or name.startswith("__sinit") or "<" in name:
+            return None  # static-init thunks / templates: source spelling drifts, skip
+        qualified = name
+
+    # candidate files: the unit's .cpp, then its parallel header
+    files = [os.path.join(ROOT, src_rel)]
+    hdr = os.path.join(ROOT, "include", src_rel[len("src/"):]) if src_rel.startswith("src/") else None
+    if hdr:
+        files.append(os.path.splitext(hdr)[0] + ".h")
+
+    for fp in files:
+        try:
+            with open(fp, newline="", encoding="latin-1") as f:
+                text = f.read()
+        except Exception:
+            continue
+        # out-of-class definition (works for .cpp and `inline T Class::m(){}` in headers)
+        d = extract_def(text, name)
+        if d:
+            return d
+        # in-class inline definition inside the header (method written unqualified)
+        if qualified and "::" in qualified:
+            cls, meth = qualified.rsplit("::", 1)
+            cls = cls.split("::")[-1]  # innermost class for nested names
+            body = _class_body(text, cls)
+            if body:
+                d = extract_def(body, meth)
+                if d:
+                    return d
+    return None
+
 def attempt(src_rel, unit, symbol, new_body):
     """Replace function body, rebuild, score. Keeps change only on 100% match.
     Returns (score, message)."""
