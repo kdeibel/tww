@@ -40,3 +40,6 @@ forge/queue/
 forge/autoloop*.log
 forge/autoloop-state.json
 forge/autoloop-stdout.log
+
+# decomp trajectory corpus (ingest into Soma corpus; do not bloat decomp git)
+forge/attempt-log.jsonl

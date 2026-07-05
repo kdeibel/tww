@@ -9,10 +9,46 @@ Commands:
 
 The dashboard (forge/dashboard.html) is all buttons — no typing needed.
 """
-import json, os, re, subprocess, sys, threading
+import datetime, json, os, re, subprocess, sys, threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Trajectory corpus (tier-2 training data): every attempt — candidate C + score +
+# the objdiff row-diff — appended before revert. This is the search process, not
+# just the answer key; a fine-tune on these learns to *find* matches, not just
+# recognize them. See ideas/tww/PICKUP.md.
+ATTEMPT_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "attempt-log.jsonl")
+
+
+def _compact_diff(d):
+    """Changed rows only, as [mark, target_asm, our_asm] — the learning signal."""
+    if not d:
+        return []
+    o, u = d.get("orig", []), d.get("ours", [])
+    rows = []
+    for i in range(max(len(o), len(u))):
+        lo = o[i][1] if i < len(o) else ""
+        mk = (o[i][0] if i < len(o) else " ") or " "
+        lu = u[i][1] if i < len(u) else ""
+        if mk != " " or lo != lu:
+            rows.append([mk, lo, lu])
+    return rows[:80]
+
+
+def log_attempt(unit, symbol, src, cand, score, msg, d, source="loop"):
+    """Append one attempt to the trajectory corpus. Best-effort; never raises."""
+    try:
+        rec = {
+            "ts": datetime.datetime.now().isoformat(timespec="seconds"),
+            "source": source, "unit": unit, "symbol": symbol, "src": src,
+            "score": score, "match": score == 100.0, "msg": msg[:200],
+            "cand": cand, "diff": _compact_diff(d),
+        }
+        with open(ATTEMPT_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=True) + "\n")
+    except Exception:
+        pass
 
 def _objdiff_binary():
     native = os.path.join(ROOT, "build", "tools", "objdiff-cli")
@@ -269,11 +305,15 @@ def attempt(src_rel, unit, symbol, new_body):
         if r.returncode != 0:
             with open(p, "w", newline="", encoding="latin-1") as f:
                 f.write(original)
-            return None, "compile error:\n" + (r.stdout + r.stderr)[-600:]
+            err = (r.stdout + r.stderr)[-600:]
+            log_attempt(unit, symbol, src_rel, new_body, None, "compile error", None)
+            return None, "compile error:\n" + err
         d, _ = diff_rows(unit, symbol)
         score = d["match"] if d else 0
         if score == 100.0:
+            log_attempt(unit, symbol, src_rel, new_body, 100.0, "MATCHED", d)
             return 100.0, "MATCHED — change kept"
+        log_attempt(unit, symbol, src_rel, new_body, score, "not a match", d)
         with open(p, "w", newline="", encoding="latin-1") as f:
             f.write(original)
         run(["ninja", obj_path(unit)])  # restore object too
@@ -359,13 +399,35 @@ def make_packet(t):
                 "## trustworthy, but types/field names are guesses; rewrite to project style)",
                 "```c", draft, "```"]
     lines += ["",
-        "## Known tricks (docs/regalloc.md, docs/decompiling.md)",
-        "- regswap: pointer temps, declaration order, avoid reassigning (use `p + 1` not `p++`)",
-        "- ~75% match usually means a missing inline (check JGadget/JUT/fopAcM helpers)",
-        "- if/else vs ternary generate different branches; case order must follow asm",
-        "- check zeldaret/tp for the same function — engine code is shared",
     ]
+    lines += _idiom_lines(t)
     return "\n".join(lines)
+
+
+IDIOMS = os.path.join(ROOT, "forge", "idioms.json")
+
+
+def load_idioms():
+    try:
+        with open(IDIOMS, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def _idiom_lines(t):
+    """Inject the accumulated match-idiom library — the compressed patterns that
+    turn a near-miss diff into a fix. Grows as new idioms are banked; this is how
+    the learnable top layer compounds instead of being rediscovered every pass."""
+    idioms = load_idioms()
+    if not idioms:
+        return ["", "## Known tricks",
+                "- regswap: pointer temps, declaration order, avoid reassigning",
+                "- ~75% usually means a missing inline; check zeldaret/tp + smb-decomp"]
+    out = ["", "## Match idioms — accumulated; read the asm diff, then apply the matching rule"]
+    for it in idioms:
+        out.append("- **%s** — when %s: %s" % (it.get("tag", "?"), it.get("when", "?"), it.get("rule", "")))
+    return out
 
 # ---------------------------------------------------------------- ollama
 
