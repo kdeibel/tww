@@ -50,17 +50,37 @@ def main():
         if a.replace("\\\\", "/").endswith(src):
             out.append('"$1"'); continue
         if a == "-o":
-            out.append(a); out.append('"$2"'); skip = True; continue
+            # permuter invokes: compile.sh <input.c> -o <output.o>
+            out.append(a); out.append('"$3"'); skip = True; continue
         out.append(shlex.quote(a))
     scratch = os.path.join(ROOT, "tools", "permuter", "scratch", symbol[:60])
     os.makedirs(scratch, exist_ok=True)
-    shutil.copy(os.path.join(ROOT, src), os.path.join(scratch, "base.c"))
+    # permuter needs a self-contained (preprocessed) base.c — it re-runs host
+    # `cpp -nostdinc` which can't see the project include dirs. Preprocess with
+    # the real mwcc (-E) so target macros/defines are exact.
+    pre = []
+    skip = False
+    for a in parts:
+        if skip: skip = False; continue
+        if a == "-c": pre.append("-E"); continue
+        if a == "-o": skip = True; continue
+        pre.append(a)
+    r = subprocess.run(pre, capture_output=True, text=True, cwd=ROOT)
+    if r.returncode != 0 or not r.stdout.strip():
+        sys.exit("mwcc -E preprocess failed:\n" + r.stderr[-2000:])
+    with open(os.path.join(scratch, "base.c"), "w") as f:
+        f.write(r.stdout.replace("\r\n", "\n"))
     shutil.copy(target_o, os.path.join(scratch, "target.o"))
     with open(os.path.join(scratch, "compile.sh"), "w") as f:
         f.write("#!/bin/sh\ncd %s\n%s\n" % (shlex.quote(ROOT), " ".join(out)))
     os.chmod(os.path.join(scratch, "compile.sh"), 0o755)
+    objdump = os.path.join(ROOT, "build", "binutils", "powerpc-eabi-objdump")
     with open(os.path.join(scratch, "settings.toml"), "w") as f:
         f.write('func_name = "%s"\ncompiler_type = "mwcc"\n' % symbol)
+        # permuter's scorer defaults to a PATH powerpc-eabi-objdump; point it at
+        # the dtk-bundled one (arch default args must be repeated — they're
+        # dropped when objdump_command is set)
+        f.write('objdump_command = "%s -dr -EB -mpowerpc -M broadway"\n' % objdump)
     print("scratch ready:", scratch)
     if run_secs:
         subprocess.run([sys.executable, os.path.join(ROOT, "tools", "permuter", "permuter.py"),
