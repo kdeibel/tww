@@ -495,7 +495,7 @@ public:
     static f32 mEnlargementSizeScaleX;
     static f32 mEnlargementSizeScaleZ;
     static u8 mFmapChkPntValue;
-    static int mFmapChkPntData_p;
+    static u32 mFmapChkPntData_p;
     static s16 mDispPosLeftUpX;
     static s16 mDispPosLeftUpY;
     static s16 mDispSizeX;

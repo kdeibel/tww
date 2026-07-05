@@ -95,7 +95,7 @@ f32 dMap_c::mEnlargementSizeCenterZ;
 f32 dMap_c::mEnlargementSizeScaleX;
 f32 dMap_c::mEnlargementSizeScaleZ;
 u8 dMap_c::mFmapChkPntValue;
-int dMap_c::mFmapChkPntData_p;
+u32 dMap_c::mFmapChkPntData_p;
 s16 dMap_c::mDispPosLeftUpX;
 s16 dMap_c::mDispPosLeftUpY;
 s16 dMap_c::mDispSizeX;
@@ -1680,7 +1680,7 @@ void dMap_c::setFmapChkDtPrm() {
 
 /* 8004AD00-8004ADC8       .text getFmapChkPntDtPnt__6dMap_cFi */
 int dMap_c::getFmapChkPntDtPnt(int i_no) {
-    JUT_ASSERT(6075, (u32)mFmapChkPntData_p != 0);
+    JUT_ASSERT(6075, mFmapChkPntData_p != 0);
     int p = 0;
     if (i_no >= 0 && i_no <= mFmapChkPntValue) {
         p = mFmapChkPntData_p + i_no * 8;
