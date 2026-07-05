@@ -444,9 +444,11 @@ static u8 GetFracForNrm(int param_0) {
 }
 
 void GXGetVtxAttrFmtv(GXVtxFmt param_0, GXVtxAttrFmtList* param_1) {
+#ifdef DEBUG
     s32 tmp;
     s32 tmp2;
     s32 tmp3;
+#endif
     int i;
 
 #ifdef DEBUG
