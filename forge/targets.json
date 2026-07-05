@@ -1,41 +1,5 @@
 [
  {
-  "unit": "framework/JSystem/JAudio/JASChannelMgr",
-  "symbol": "addListHead__Q28JASystem11TChannelMgrFPQ28JASystem8TChannelUl",
-  "demangled": "addListHead__Q28JASystem11TChannelMgrFPQ28JASystem8TChannelUl",
-  "size": 172,
-  "match": 99.98,
-  "src": "src/JSystem/JAudio/JASChannelMgr.cpp",
-  "unit_match": 44.87
- },
- {
-  "unit": "framework/JSystem/JAudio/JASChannelMgr",
-  "symbol": "addListTail__Q28JASystem11TChannelMgrFPQ28JASystem8TChannelUl",
-  "demangled": "addListTail__Q28JASystem11TChannelMgrFPQ28JASystem8TChannelUl",
-  "size": 224,
-  "match": 99.98,
-  "src": "src/JSystem/JAudio/JASChannelMgr.cpp",
-  "unit_match": 44.87
- },
- {
-  "unit": "framework/d/d_map",
-  "symbol": "setArriveInfo__6dMap_cFff",
-  "demangled": "setArriveInfo__6dMap_cFff",
-  "size": 236,
-  "match": 99.98,
-  "src": "src/d/d_map.cpp",
-  "unit_match": 54.08
- },
- {
-  "unit": "framework/d/d_operate_wind",
-  "symbol": "dOw_Create__FP9msg_class",
-  "demangled": "dOw_Create__FP9msg_class",
-  "size": 156,
-  "match": 99.95,
-  "src": "src/d/d_operate_wind.cpp",
-  "unit_match": 15.38
- },
- {
   "unit": "framework/dolphin/os/OSThread",
   "symbol": "__OSThreadInit",
   "demangled": "__OSThreadInit",
@@ -43,24 +7,6 @@
   "match": 99.94,
   "src": "src/dolphin/os/OSThread.c",
   "unit_match": 100.0
- },
- {
-  "unit": "framework/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue",
-  "symbol": "ReserveEXI2Port",
-  "demangled": "ReserveEXI2Port",
-  "size": 48,
-  "match": 99.92,
-  "src": "src/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue.c",
-  "unit_match": 31.77
- },
- {
-  "unit": "framework/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue",
-  "symbol": "UnreserveEXI2Port",
-  "demangled": "UnreserveEXI2Port",
-  "size": 48,
-  "match": 99.92,
-  "src": "src/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue.c",
-  "unit_match": 31.77
  },
  {
   "unit": "framework/JSystem/JParticle/JPADrawVisitor",
@@ -72,24 +18,6 @@
   "unit_match": 68.64
  },
  {
-  "unit": "framework/dolphin/gx/GXFrameBuf",
-  "symbol": "GXCopyTex",
-  "demangled": "GXCopyTex",
-  "size": 380,
-  "match": 99.89,
-  "src": "src/dolphin/gx/GXFrameBuf.c",
-  "unit_match": 95.29
- },
- {
-  "unit": "framework/d/d_cam_param",
-  "symbol": "xyzProjPosOnYZ__8dCamMathF7cSAngleR4cXyzR4cXyz",
-  "demangled": "xyzProjPosOnYZ__8dCamMathF7cSAngleR4cXyzR4cXyz",
-  "size": 220,
-  "match": 99.82,
-  "src": "src/d/d_cam_param.cpp",
-  "unit_match": 79.26
- },
- {
   "unit": "d_a_kamome/d/actor/d_a_kamome",
   "symbol": "daKamome_Draw__FP12kamome_class",
   "demangled": "daKamome_Draw__FP12kamome_class",
@@ -97,15 +25,6 @@
   "match": 99.73,
   "src": "src/d/actor/d_a_kamome.cpp",
   "unit_match": 99.99
- },
- {
-  "unit": "framework/dolphin/gx/GXAttr",
-  "symbol": "GXGetVtxAttrFmtv",
-  "demangled": "GXGetVtxAttrFmtv",
-  "size": 116,
-  "match": 99.69,
-  "src": "src/dolphin/gx/GXAttr.c",
-  "unit_match": 90.24
  },
  {
   "unit": "framework/d/d_particle",
@@ -171,13 +90,13 @@
   "unit_match": 99.85
  },
  {
-  "unit": "framework/dolphin/gx/GXFrameBuf",
-  "symbol": "GXCopyDisp",
-  "demangled": "GXCopyDisp",
-  "size": 348,
-  "match": 99.43,
-  "src": "src/dolphin/gx/GXFrameBuf.c",
-  "unit_match": 95.29
+  "unit": "framework/dolphin/gx/GXTexture",
+  "symbol": "GXInitTlutObj",
+  "demangled": "GXInitTlutObj",
+  "size": 72,
+  "match": 99.44,
+  "src": "src/dolphin/gx/GXTexture.c",
+  "unit_match": 98.65
  },
  {
   "unit": "framework/d/d_map",
@@ -186,7 +105,7 @@
   "size": 348,
   "match": 99.2,
   "src": "src/d/d_map.cpp",
-  "unit_match": 54.08
+  "unit_match": 54.46
  },
  {
   "unit": "d_a_bpw/d/actor/d_a_bpw",
@@ -202,9 +121,9 @@
   "symbol": "setCollectPoint__6dMap_cFUcUcfffScsUcUcUcUc",
   "demangled": "setCollectPoint__6dMap_cFUcUcfffScsUcUcUcUc",
   "size": 364,
-  "match": 98.78,
+  "match": 98.79,
   "src": "src/d/d_map.cpp",
-  "unit_match": 54.08
+  "unit_match": 54.46
  },
  {
   "unit": "d_a_movie_player/d/actor/d_a_movie_player",
@@ -249,7 +168,7 @@
   "size": 264,
   "match": 98.33,
   "src": "src/d/d_map.cpp",
-  "unit_match": 54.08
+  "unit_match": 54.46
  },
  {
   "unit": "framework/JSystem/J3DGraphBase/J3DMatBlock",
@@ -259,6 +178,15 @@
   "match": 98.28,
   "src": "src/JSystem/J3DGraphBase/J3DMatBlock.cpp",
   "unit_match": 99.98
+ },
+ {
+  "unit": "framework/dolphin/gx/GXAttr",
+  "symbol": "__GXSetVAT",
+  "demangled": "__GXSetVAT",
+  "size": 156,
+  "match": 97.95,
+  "src": "src/dolphin/gx/GXAttr.c",
+  "unit_match": 99.05
  },
  {
   "unit": "framework/d/d_mesg",
@@ -277,6 +205,15 @@
   "match": 97.78,
   "src": "src/JAZelAudio/JAIZelBasic.cpp",
   "unit_match": 32.32
+ },
+ {
+  "unit": "framework/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue",
+  "symbol": "TRKReadUARTPoll",
+  "demangled": "TRKReadUARTPoll",
+  "size": 240,
+  "match": 97.75,
+  "src": "src/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue.c",
+  "unit_match": 99.55
  },
  {
   "unit": "framework/d/d_meter",
@@ -303,16 +240,7 @@
   "size": 64,
   "match": 97.5,
   "src": "src/dolphin/gx/GXAttr.c",
-  "unit_match": 90.24
- },
- {
-  "unit": "framework/dolphin/gx/GXTexture",
-  "symbol": "GXLoadTlut",
-  "demangled": "GXLoadTlut",
-  "size": 156,
-  "match": 97.44,
-  "src": "src/dolphin/gx/GXTexture.c",
-  "unit_match": 92.78
+  "unit_match": 99.05
  },
  {
   "unit": "d_a_npc_ji1/d/actor/d_a_npc_ji1",
@@ -322,15 +250,6 @@
   "match": 97.2,
   "src": "src/d/actor/d_a_npc_ji1.cpp",
   "unit_match": 99.96
- },
- {
-  "unit": "framework/JSystem/JAudio/JASChannelMgr",
-  "symbol": "init__Q28JASystem11TChannelMgrFv",
-  "demangled": "init__Q28JASystem11TChannelMgrFv",
-  "size": 272,
-  "match": 96.97,
-  "src": "src/JSystem/JAudio/JASChannelMgr.cpp",
-  "unit_match": 44.87
  },
  {
   "unit": "framework/TRK_MINNOW_DOLPHIN/Portable/dispatch",
@@ -351,22 +270,22 @@
   "unit_match": 97.44
  },
  {
-  "unit": "framework/dolphin/gx/GXLight",
-  "symbol": "GXSetNumChans",
-  "demangled": "GXSetNumChans",
-  "size": 68,
-  "match": 96.76,
-  "src": "src/dolphin/gx/GXLight.c",
-  "unit_match": 93.11
- },
- {
   "unit": "framework/d/d_map",
   "symbol": "drawPointAgbCursor__6dMap_cFff",
   "demangled": "drawPointAgbCursor__6dMap_cFff",
   "size": 392,
   "match": 96.68,
   "src": "src/d/d_map.cpp",
-  "unit_match": 54.08
+  "unit_match": 54.46
+ },
+ {
+  "unit": "framework/dolphin/gx/GXBump",
+  "symbol": "__GXUpdateBPMask",
+  "demangled": "__GXUpdateBPMask",
+  "size": 204,
+  "match": 96.57,
+  "src": "src/dolphin/gx/GXBump.c",
+  "unit_match": 96.94
  },
  {
   "unit": "framework/JSystem/JStudio/JStudio/fvb",
@@ -474,7 +393,16 @@
   "size": 92,
   "match": 94.35,
   "src": "src/d/d_cam_param.cpp",
-  "unit_match": 79.26
+  "unit_match": 79.27
+ },
+ {
+  "unit": "framework/dolphin/gx/GXAttr",
+  "symbol": "GXSetArray",
+  "demangled": "GXSetArray",
+  "size": 140,
+  "match": 94.29,
+  "src": "src/dolphin/gx/GXAttr.c",
+  "unit_match": 99.05
  },
  {
   "unit": "framework/dolphin/gx/GXGeometry",
@@ -483,7 +411,7 @@
   "size": 92,
   "match": 92.83,
   "src": "src/dolphin/gx/GXGeometry.c",
-  "unit_match": 83.88
+  "unit_match": 99.3
  },
  {
   "unit": "framework/JSystem/JMessage/resource",
@@ -501,7 +429,7 @@
   "size": 232,
   "match": 92.07,
   "src": "src/dolphin/gx/GXPixel.c",
-  "unit_match": 70.25
+  "unit_match": 81.15
  },
  {
   "unit": "framework/d/d_message",
@@ -528,7 +456,7 @@
   "size": 244,
   "match": 90.33,
   "src": "src/dolphin/gx/GXLight.c",
-  "unit_match": 93.11
+  "unit_match": 93.25
  },
  {
   "unit": "framework/dolphin/gx/GXLight",
@@ -537,7 +465,7 @@
   "size": 244,
   "match": 90.33,
   "src": "src/dolphin/gx/GXLight.c",
-  "unit_match": 93.11
+  "unit_match": 93.25
  },
  {
   "unit": "framework/d/actor/d_a_grid",
@@ -564,7 +492,16 @@
   "size": 184,
   "match": 89.57,
   "src": "src/dolphin/gx/GXTexture.c",
-  "unit_match": 92.78
+  "unit_match": 98.65
+ },
+ {
+  "unit": "framework/d/d_operate_wind",
+  "symbol": "arrowRotate__15dOperate_wind_cFP18fopMsgM_pane_classs",
+  "demangled": "arrowRotate__15dOperate_wind_cFP18fopMsgM_pane_classs",
+  "size": 152,
+  "match": 89.18,
+  "src": "src/d/d_operate_wind.cpp",
+  "unit_match": 43.48
  },
  {
   "unit": "framework/d/d_camera",
@@ -591,7 +528,7 @@
   "size": 352,
   "match": 87.95,
   "src": "src/dolphin/gx/GXBump.c",
-  "unit_match": 74.36
+  "unit_match": 96.94
  },
  {
   "unit": "framework/TRK_MINNOW_DOLPHIN/ppc/Generic/targimpl",
@@ -609,7 +546,7 @@
   "size": 340,
   "match": 86.98,
   "src": "src/dolphin/gx/GXFrameBuf.c",
-  "unit_match": 95.29
+  "unit_match": 97.45
  },
  {
   "unit": "d_a_mozo/d/actor/d_a_mozo",
@@ -627,7 +564,7 @@
   "size": 240,
   "match": 85.58,
   "src": "src/d/d_operate_wind.cpp",
-  "unit_match": 15.38
+  "unit_match": 43.48
  },
  {
   "unit": "framework/d/d_message",
@@ -645,7 +582,7 @@
   "size": 236,
   "match": 82.37,
   "src": "src/d/d_map.cpp",
-  "unit_match": 54.08
+  "unit_match": 54.46
  },
  {
   "unit": "d_a_npc_auction/d/actor/d_a_npc_auction",
@@ -657,13 +594,13 @@
   "unit_match": 11.78
  },
  {
-  "unit": "framework/dolphin/gx/GXTexture",
-  "symbol": "GXInitTlutObj",
-  "demangled": "GXInitTlutObj",
-  "size": 72,
-  "match": 80.0,
-  "src": "src/dolphin/gx/GXTexture.c",
-  "unit_match": 92.78
+  "unit": "framework/dolphin/gx/GXPixel",
+  "symbol": "GXSetBlendMode",
+  "demangled": "GXSetBlendMode",
+  "size": 84,
+  "match": 80.24,
+  "src": "src/dolphin/gx/GXPixel.c",
+  "unit_match": 81.15
  },
  {
   "unit": "framework/JSystem/JAudio/JASBasicWaveBank",
@@ -681,16 +618,25 @@
   "size": 60,
   "match": 78.67,
   "src": "src/dolphin/gx/GXFrameBuf.c",
-  "unit_match": 95.29
+  "unit_match": 97.45
  },
  {
-  "unit": "framework/dolphin/gx/GXGeometry",
-  "symbol": "GXBegin",
-  "demangled": "GXBegin",
-  "size": 240,
-  "match": 78.63,
-  "src": "src/dolphin/gx/GXGeometry.c",
-  "unit_match": 83.88
+  "unit": "framework/dolphin/gx/GXTev",
+  "symbol": "GXSetTevColorOp",
+  "demangled": "GXSetTevColorOp",
+  "size": 104,
+  "match": 78.08,
+  "src": "src/dolphin/gx/GXTev.c",
+  "unit_match": 89.82
+ },
+ {
+  "unit": "framework/dolphin/gx/GXTev",
+  "symbol": "GXSetTevAlphaOp",
+  "demangled": "GXSetTevAlphaOp",
+  "size": 104,
+  "match": 78.08,
+  "src": "src/dolphin/gx/GXTev.c",
+  "unit_match": 89.82
  },
  {
   "unit": "framework/TRK_MINNOW_DOLPHIN/Portable/serpoll",
@@ -708,16 +654,7 @@
   "size": 356,
   "match": 77.42,
   "src": "src/d/d_map.cpp",
-  "unit_match": 54.08
- },
- {
-  "unit": "framework/dolphin/gx/GXAttr",
-  "symbol": "__GXSetVAT",
-  "demangled": "__GXSetVAT",
-  "size": 156,
-  "match": 76.41,
-  "src": "src/dolphin/gx/GXAttr.c",
-  "unit_match": 90.24
+  "unit_match": 54.46
  },
  {
   "unit": "d_a_bpw/d/actor/d_a_bpw",
@@ -738,13 +675,13 @@
   "unit_match": 72.18
  },
  {
-  "unit": "framework/d/d_operate_wind",
-  "symbol": "_create__5dOw_cFv",
-  "demangled": "_create__5dOw_cFv",
-  "size": 192,
-  "match": 72.85,
-  "src": "src/d/d_operate_wind.cpp",
-  "unit_match": 15.38
+  "unit": "framework/dolphin/gx/GXTexture",
+  "symbol": "GXSetTexCoordScaleManually",
+  "demangled": "GXSetTexCoordScaleManually",
+  "size": 140,
+  "match": 72.29,
+  "src": "src/dolphin/gx/GXTexture.c",
+  "unit_match": 98.65
  },
  {
   "unit": "framework/dolphin/gx/GXLight",
@@ -753,7 +690,7 @@
   "size": 204,
   "match": 70.98,
   "src": "src/dolphin/gx/GXLight.c",
-  "unit_match": 93.11
+  "unit_match": 93.25
  },
  {
   "unit": "framework/d/d_menu_fmap",
@@ -774,51 +711,6 @@
   "unit_match": 69.98
  },
  {
-  "unit": "framework/dolphin/gx/GXGeometry",
-  "symbol": "__GXSetDirtyState",
-  "demangled": "__GXSetDirtyState",
-  "size": 160,
-  "match": 69.05,
-  "src": "src/dolphin/gx/GXGeometry.c",
-  "unit_match": 83.88
- },
- {
-  "unit": "framework/dolphin/gx/GXPixel",
-  "symbol": "GXSetColorUpdate",
-  "demangled": "GXSetColorUpdate",
-  "size": 44,
-  "match": 67.73,
-  "src": "src/dolphin/gx/GXPixel.c",
-  "unit_match": 70.25
- },
- {
-  "unit": "framework/dolphin/gx/GXPixel",
-  "symbol": "GXSetAlphaUpdate",
-  "demangled": "GXSetAlphaUpdate",
-  "size": 44,
-  "match": 67.73,
-  "src": "src/dolphin/gx/GXPixel.c",
-  "unit_match": 70.25
- },
- {
-  "unit": "framework/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue",
-  "symbol": "TRK_board_display",
-  "demangled": "TRK_board_display",
-  "size": 36,
-  "match": 66.67,
-  "src": "src/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue.c",
-  "unit_match": 31.77
- },
- {
-  "unit": "framework/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue",
-  "symbol": "TRKInitializeIntDrivenUART",
-  "demangled": "TRKInitializeIntDrivenUART",
-  "size": 60,
-  "match": 66.67,
-  "src": "src/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue.c",
-  "unit_match": 31.77
- },
- {
   "unit": "framework/TRK_MINNOW_DOLPHIN/Portable/serpoll",
   "symbol": "TRKGetInput",
   "demangled": "TRKGetInput",
@@ -834,7 +726,7 @@
   "size": 116,
   "match": 60.0,
   "src": "src/dolphin/gx/GXTev.c",
-  "unit_match": 82.32
+  "unit_match": 89.82
  },
  {
   "unit": "framework/dolphin/gx/GXTev",
@@ -843,7 +735,7 @@
   "size": 116,
   "match": 59.83,
   "src": "src/dolphin/gx/GXTev.c",
-  "unit_match": 82.32
+  "unit_match": 89.82
  },
  {
   "unit": "framework/d/d_flower",
@@ -1366,14 +1258,5 @@
   "match": 50.0,
   "src": "src/d/actor/d_a_tag_kf1.cpp",
   "unit_match": 5.26
- },
- {
-  "unit": "framework/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue",
-  "symbol": "EnableEXI2Interrupts",
-  "demangled": "EnableEXI2Interrupts",
-  "size": 48,
-  "match": 50.0,
-  "src": "src/TRK_MINNOW_DOLPHIN/Os/dolphin/dolphin_trk_glue.c",
-  "unit_match": 31.77
  }
 ]
