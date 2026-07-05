@@ -34,3 +34,9 @@ compile_commands.json
 /*.txt
 *.exe
 .DS_Store
+tools/permuter/
+tools/m2c/
+forge/queue/
+forge/autoloop*.log
+forge/autoloop-state.json
+forge/autoloop-stdout.log
