@@ -534,9 +534,7 @@ void GXCopyDisp(void* dest, GXBool doClear) {
     check = GX_FALSE;
     if ((doClear || (gx->peCtrl & 0x7) == 3) && (gx->peCtrl >> 6 & 0x1) == 1) {
         check = GX_TRUE;
-        reg = gx->peCtrl;
-        GX_SET_REG(reg, 0, 25, 25);
-        GX_BP_LOAD_REG(reg);
+        GX_BP_LOAD_REG(gx->peCtrl & ~0x40);
     }
 
     GX_BP_LOAD_REG(gx->cpDispSrc);

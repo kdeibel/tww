@@ -110,7 +110,6 @@ void GXInitTexObj(GXTexObj* obj, void* imagePtr, u16 width, u16 height, GXTexFmt
                   GXTexWrapMode sWrap, GXTexWrapMode tWrap, GXBool useMIPmap) {
     u32 imageBase;
     u16 a, b;
-    u32 c, d;
 
     GXTexObj* internal = (GXTexObj*)obj;
     memset(internal, 0, sizeof(*internal));
@@ -140,7 +139,7 @@ void GXInitTexObj(GXTexObj* obj, void* imagePtr, u16 width, u16 height, GXTexFmt
     GX_SET_REG(internal->texture_size, height - 1, 12, 21);
 
     GX_SET_REG(internal->texture_size, format & 0xf, 8, 11);
-    imageBase = (u32)imagePtr >> 5;
+    imageBase = ((u32)imagePtr >> 5) & 0x1FFFFFF;
     GX_SET_REG(internal->texture_address, imageBase, 11, 31);
 
     switch (format & 0xf) {
@@ -276,8 +275,6 @@ u32 GXGetTexObjTlut(GXTexObj* obj) {
 }
 
 void GXLoadTexObjPreLoaded(GXTexObj* obj, GXTexRegion* region, GXTexMapID map) {
-    u8 stackManipulation[0x18];
-
     GXTexObj* internalObj = (GXTexObj*)obj;
     GXTexRegion* internalRegion = (GXTexRegion*)region;
 
