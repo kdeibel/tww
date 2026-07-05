@@ -392,10 +392,68 @@ def _class_body(text, class_name):
     return text[bo: e + 1]
 
 
+_class_index_mem = None
+
+
+def class_index():
+    """{class_name: [header_rel_paths]} over the whole include/ tree, so a
+    Class::method miss can be resolved to the header that ACTUALLY defines the
+    class (not just the unit's parallel header). Cached (build/m2c/class-index.json)."""
+    global _class_index_mem
+    if _class_index_mem is not None:
+        return _class_index_mem
+    cache = os.path.join(M2C_CACHE, "class-index.json")
+    try:
+        with open(cache) as f:
+            _class_index_mem = json.load(f)
+            return _class_index_mem
+    except Exception:
+        pass
+    idx = {}
+    inc = os.path.join(ROOT, "include")
+    pat = re.compile(r"\b(?:class|struct)\s+(\w+)\s*(?::[^{;]*)?\{")
+    for dp, _dirs, files in os.walk(inc):
+        for fn in files:
+            if not fn.endswith((".h", ".hpp")):
+                continue
+            fp = os.path.join(dp, fn)
+            try:
+                text = open(fp, encoding="latin-1", errors="replace").read()
+            except Exception:
+                continue
+            rel = os.path.relpath(fp, ROOT)
+            for m in pat.finditer(text):
+                idx.setdefault(m.group(1), [])
+                if rel not in idx[m.group(1)]:
+                    idx[m.group(1)].append(rel)
+    _class_index_mem = idx
+    try:
+        os.makedirs(M2C_CACHE, exist_ok=True)
+        with open(cache, "w") as f:
+            json.dump(idx, f)
+    except Exception:
+        pass
+    return idx
+
+
+_text_cache = {}
+
+
+def _read_text(fp):
+    if fp not in _text_cache:
+        try:
+            with open(fp, newline="", encoding="latin-1") as f:
+                _text_cache[fp] = f.read()
+        except Exception:
+            _text_cache[fp] = None
+    return _text_cache[fp]
+
+
 def read_function(src_rel, symbol):
     """Read a matched function's C source for the corpus. Marker path first (d/
-    game code), then demangle + name-based extraction in the .cpp, then the
-    parallel header (SDK methods are often defined inline there)."""
+    game code), then demangle + name-based extraction across: the unit's .cpp,
+    its parallel header, and — via the class index — the header that actually
+    defines the class (SDK methods are usually inline there)."""
     src = get_function_source(src_rel, symbol)
     if src:
         return src
@@ -410,26 +468,33 @@ def read_function(src_rel, symbol):
             return None  # static-init thunks / templates: source spelling drifts, skip
         qualified = name
 
-    # candidate files: the unit's .cpp, then its parallel header
-    files = [os.path.join(ROOT, src_rel)]
-    hdr = os.path.join(ROOT, "include", src_rel[len("src/"):]) if src_rel.startswith("src/") else None
-    if hdr:
-        files.append(os.path.splitext(hdr)[0] + ".h")
+    cls = meth = None
+    if qualified and "::" in qualified:
+        head, meth = qualified.rsplit("::", 1)
+        cls = head.split("::")[-1]  # innermost class for nested names
 
+    # candidate files: unit .cpp, parallel header, then the class's real header(s)
+    files = [os.path.join(ROOT, src_rel)]
+    if src_rel.startswith("src/"):
+        files.append(os.path.join(ROOT, "include", src_rel[len("src/"):-4] + ".h"))
+    if cls:
+        for hrel in class_index().get(cls, [])[:8]:
+            files.append(os.path.join(ROOT, hrel))
+
+    seen = set()
     for fp in files:
-        try:
-            with open(fp, newline="", encoding="latin-1") as f:
-                text = f.read()
-        except Exception:
+        if fp in seen:
             continue
-        # out-of-class definition (works for .cpp and `inline T Class::m(){}` in headers)
+        seen.add(fp)
+        text = _read_text(fp)
+        if text is None:
+            continue
+        # out-of-class definition (.cpp, or `inline T Class::m(){}` in a header)
         d = extract_def(text, name)
         if d:
             return d
-        # in-class inline definition inside the header (method written unqualified)
-        if qualified and "::" in qualified:
-            cls, meth = qualified.rsplit("::", 1)
-            cls = cls.split("::")[-1]  # innermost class for nested names
+        # in-class inline definition (method written unqualified inside the class body)
+        if cls:
             body = _class_body(text, cls)
             if body:
                 d = extract_def(body, meth)
