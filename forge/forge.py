@@ -339,6 +339,10 @@ def ollama_attempt(t, cfg):
         except Exception as e:
             return log + [f"Ollama unavailable: {e}"]
         body = re.sub(r"^```[a-z+]*\n?|```$", "", body.strip(), flags=re.M).strip("\n")
+        # Source tree is byte-preserving latin-1; model output is arbitrary unicode
+        # (it echoes Japanese literals from packets). Chars >255 would explode the
+        # latin-1 write in attempt() — replace them, the compiler rejects them anyway.
+        body = body.encode("latin-1", "replace").decode("latin-1")
         body = body.encode("latin-1", errors="replace").decode("latin-1")
         body = "\n".join("    " + ln if ln and not ln.startswith(" ") else ln
                          for ln in body.splitlines())

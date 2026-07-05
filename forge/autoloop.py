@@ -36,7 +36,7 @@ GPU_MAX_MB = 11000          # skip work if something else is hogging VRAM
 def log(msg):
     line = "[%s] %s" % (datetime.datetime.now().strftime("%m-%d %H:%M:%S"), msg)
     print(line, flush=True)
-    with open(LOG, "a") as f:
+    with open(LOG, "a", encoding="utf-8", errors="replace") as f:
         f.write(line + "\n")
 
 
