@@ -115,49 +115,42 @@ void GXSetFogRangeAdj(GXBool enable, u16 center, GXFogAdjTable* table) {
 
 void GXSetBlendMode(GXBlendMode type, GXBlendFactor src_factor, GXBlendFactor dst_factor,
                     GXLogicOp op) {
-    u32 blendModeReg = gx->cmode0;
-    GX_SET_REG(blendModeReg, type == GX_BM_SUBTRACT, GX_BP_BLENDMODE_SUBTRACT_ST,
-               GX_BP_BLENDMODE_SUBTRACT_END);
-    GX_SET_REG(blendModeReg, type, GX_BP_BLENDMODE_ENABLE_ST, GX_BP_BLENDMODE_ENABLE_END);
-    GX_SET_REG(blendModeReg, type == GX_BM_LOGIC, GX_BP_BLENDMODE_LOGIC_OP_ST,
-               GX_BP_BLENDMODE_LOGIC_OP_END);
-    GX_SET_REG(blendModeReg, op, GX_BP_BLENDMODE_LOGICMODE_ST, GX_BP_BLENDMODE_LOGICMODE_END);
-    GX_SET_REG(blendModeReg, src_factor, GX_BP_BLENDMODE_SRCFACTOR_ST,
-               GX_BP_BLENDMODE_SRCFACTOR_END);
-    GX_SET_REG(blendModeReg, dst_factor, GX_BP_BLENDMODE_DSTFACTOR_ST,
-               GX_BP_BLENDMODE_DSTFACTOR_END);
-
-    GX_BP_LOAD_REG(blendModeReg);
-    gx->cmode0 = blendModeReg;
-
-    gx->bpSentNot = FALSE;
+    u32 reg = gx->cmode0;
+    u32 reg2;
+    reg = __rlwimi(reg, __cntlzw(GX_BM_SUBTRACT - type), 6, 20, 20);
+    reg2 = __rlwimi(reg, type, 0, 31, 31);
+    reg2 = __rlwimi(reg2, __cntlzw(GX_BM_LOGIC - type), 28, 30, 30);
+    reg2 = __rlwimi(reg2, op, 12, 16, 19);
+    reg2 = __rlwimi(reg2, src_factor, 8, 21, 23);
+    reg2 = __rlwimi(reg2, dst_factor, 5, 24, 26);
+    GX_BP_LOAD_REG(reg2);
+    gx->cmode0 = reg2;
+    gx->bpSentNot = GX_FALSE;
 }
 
 void GXSetColorUpdate(GXBool updateEnable) {
-    u32 blendModeReg = gx->cmode0;
-    GX_SET_REG(blendModeReg, updateEnable, GX_BP_BLENDMODE_COLOR_UPDATE_ST,
-               GX_BP_BLENDMODE_COLOR_UPDATE_END);
-    GX_BP_LOAD_REG(blendModeReg);
-    gx->cmode0 = blendModeReg;
+    u32 reg = gx->cmode0;
+    reg = __rlwimi(reg, updateEnable, 3, 28, 28);
+    GX_BP_LOAD_REG(reg);
+    gx->cmode0 = reg;
     gx->bpSentNot = GX_FALSE;
 }
 
 void GXSetAlphaUpdate(GXBool updateEnable) {
-    u32 blendModeReg = gx->cmode0;
-    GX_SET_REG(blendModeReg, updateEnable, GX_BP_BLENDMODE_ALPHA_UPDATE_ST,
-               GX_BP_BLENDMODE_ALPHA_UPDATE_END);
-    GX_BP_LOAD_REG(blendModeReg);
-    gx->cmode0 = blendModeReg;
+    u32 reg = gx->cmode0;
+    reg = __rlwimi(reg, updateEnable, 4, 27, 27);
+    GX_BP_LOAD_REG(reg);
+    gx->cmode0 = reg;
     gx->bpSentNot = GX_FALSE;
 }
 
 void GXSetZMode(GXBool compareEnable, GXCompare func, GXBool updateEnable) {
-    u32 zModeReg = gx->zmode;
-    GX_SET_REG(zModeReg, compareEnable, GX_BP_ZMODE_TEST_ENABLE_ST, GX_BP_ZMODE_TEST_ENABLE_END);
-    GX_SET_REG(zModeReg, func, GX_BP_ZMODE_COMPARE_ST, GX_BP_ZMODE_COMPARE_END);
-    GX_SET_REG(zModeReg, updateEnable, GX_BP_ZMODE_UPDATE_ENABLE_ST, GX_BP_ZMODE_UPDATE_ENABLE_END);
-    GX_BP_LOAD_REG(zModeReg);
-    gx->zmode = zModeReg;
+    u32 reg = gx->zmode;
+    reg = __rlwimi(reg, compareEnable, 0, 31, 31);
+    reg = __rlwimi(reg, func, 1, 28, 30);
+    reg = __rlwimi(reg, updateEnable, 4, 27, 27);
+    GX_BP_LOAD_REG(reg);
+    gx->zmode = reg;
     gx->bpSentNot = GX_FALSE;
 }
 
@@ -206,11 +199,12 @@ void GXSetDither(GXBool dither) {
 }
 
 void GXSetDstAlpha(GXBool enable, u8 alpha) {
-    u32 dstAlpha = gx->cmode1;
-    GX_SET_REG(dstAlpha, alpha, GX_BP_DSTALPHA_ALPHA_ST, GX_BP_DSTALPHA_ALPHA_END);
-    GX_SET_REG(dstAlpha, enable, GX_BP_DSTALPHA_ENABLE_ST, GX_BP_DSTALPHA_ENABLE_END);
-    GX_BP_LOAD_REG(dstAlpha);
-    gx->cmode1 = dstAlpha;
+    u32 reg = gx->cmode1;
+    u32 reg2;
+    reg = __rlwimi(reg, alpha, 0, 24, 31);
+    reg2 = __rlwimi(reg, enable, 8, 23, 23);
+    GX_BP_LOAD_REG(reg2);
+    gx->cmode1 = reg2;
     gx->bpSentNot = GX_FALSE;
 }
 
