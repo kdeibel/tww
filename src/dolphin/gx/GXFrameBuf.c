@@ -250,9 +250,9 @@ void GXSetTexCopySrc(u16 left, u16 top, u16 width, u16 height) {
 }
 
 void GXSetDispCopyDst(u16 arg0, u16 arg1) {
-    s32 val = (s32)((arg0 << 1) & 0xFFFE) >> 5;
+    u32 c = arg0 << 1;
     gx->cpDispStride = 0;
-    GX_BITFIELD_SET(gx->cpDispStride, 22, 10, val);
+    GX_BITFIELD_SET(gx->cpDispStride, 22, 10, (s32)(c & 0xFFFE) >> 5);
     GX_BITFIELD_SET(gx->cpDispStride, 0, 8, 0x4D);
 }
 
