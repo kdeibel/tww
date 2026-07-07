@@ -768,7 +768,8 @@ void GXSetTexCoordGen2(GXTexCoordID id, GXTexGenType type, GXTexGenSrc src, u32 
 }
 
 void GXSetNumTexGens(u8 count) {
-    GX_SET_REG(gx->genMode, count, GX_BP_GENMODE_NUMTEX_ST, GX_BP_GENMODE_NUMTEX_END);
-    GX_XF_LOAD_REG(GX_XF_REG_NUMTEX, count);
+    u32 c = count;
+    GX_SET_REG(gx->genMode, c, GX_BP_GENMODE_NUMTEX_ST, GX_BP_GENMODE_NUMTEX_END);
+    GX_XF_LOAD_REG(GX_XF_REG_NUMTEX, c);
     gx->dirtyState |= GX_DIRTY_GEN_MODE;
 }
