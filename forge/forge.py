@@ -263,19 +263,73 @@ def diff_rows(unit, symbol):
 
 # ---------------------------------------------------------------- source editing
 
+def _def_body_span(text, name):
+    """Body span of the UNAMBIGUOUS file-scope definition of plain identifier / qualified
+    name `name` — the same paren+brace matching as extract_def(), but returns the {…} body
+    span (not the text) in find_function_span's splice contract: (start, end) where start is
+    just past the opening '{' and end is the index of the char before the closing '}' (so the
+    caller's `original[end+1:]` begins exactly at that '}'). None if not found or overloaded
+    (>1 definition — refuse rather than edit the wrong one)."""
+    pat = re.compile(r"(?<![\w:~])" + re.escape(name) + r"\s*\(")
+    hits = []
+    for m in pat.finditer(text):
+        i = text.find("(", m.start())
+        depth, j = 0, i
+        while j < len(text):
+            c = text[j]
+            if c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        if j >= len(text):
+            continue
+        tail = re.match(r"\s*(?:const\s*)?\{", text[j + 1: j + 48])
+        if not tail:
+            continue  # a declaration (`;`) or a call, not a definition
+        bo = j + 1 + tail.end() - 1  # index of the body-opening '{'
+        depth, e = 0, bo
+        while e < len(text):
+            c = text[e]
+            if c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            e += 1
+        if e >= len(text):
+            continue
+        hits.append((bo + 1, e - 1))
+    return hits[0] if len(hits) == 1 else None
+
+
 def find_function_span(text, symbol):
-    """Locate function body via the repo's '.text <mangled>' comment convention.
-    Returns (body_start, body_end) — the span between '{' and its closing '\n}'."""
+    """Locate a function body for in-place replacement. Marker path first (the repo's
+    '.text <mangled>' comment convention on game code); then a name-based fallback for
+    SDK / GX `.c` units that lack the marker (plain-C symbol == function name; C++ via
+    demangle). Returns (body_start, body_end) — start just past '{', end at the char
+    before the closing '}'."""
     m = re.search(r"/\*[^*]*\.text\s+" + re.escape(symbol) + r"\s*\*/", text)
-    if not m:
-        return None
-    brace = text.find("{", m.end())
-    if brace == -1:
-        return None
-    end = text.find("\n}", brace)
-    if end == -1:
-        return None
-    return brace + 1, end
+    if m:
+        brace = text.find("{", m.end())
+        if brace != -1:
+            end = text.find("\n}", brace)
+            if end != -1:
+                return brace + 1, end
+        # marker present but braces are laid out oddly — fall through to name-based
+    # fallback: no usable marker (SDK/GX .c). Resolve the source name from the symbol.
+    name = symbol
+    if not re.match(r"^[A-Za-z_]\w*$", symbol):
+        dm = demangle(symbol)
+        if not dm:
+            return None
+        name = dm.split("(")[0].strip()  # 'Class::method' / free fn
+        if not name or "<" in name or name.startswith("__sinit"):
+            return None  # templates / static-init thunks: source spelling drifts
+    return _def_body_span(text, name)
 
 def get_function_source(src_rel, symbol):
     p = os.path.join(ROOT, src_rel)
@@ -511,9 +565,12 @@ def attempt(src_rel, unit, symbol, new_body):
     span = find_function_span(original, symbol)
     if not span:
         return None, "function comment marker not found"
-    if not new_body.startswith("\n"):
+    # newline-guard the body so it sits on its own lines between the braces. CRLF-aware:
+    # TRK/SDK .c units use \r\n, and a naive startswith("\n") would prepend a spurious
+    # \n after '{' (the body starts '\r\n...'), corrupting the splice.
+    if new_body[:1] not in ("\n", "\r"):
         new_body = "\n" + new_body
-    if not new_body.endswith("\n"):
+    if new_body[-1:] not in ("\n", "\r"):
         new_body += "\n"
     candidate = original[:span[0]] + new_body + original[span[1] + 1:]
     try:

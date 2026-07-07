@@ -29,6 +29,57 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import forge
 
+
+def to_body(c):
+    """Reduce a full function `ret name(args) { <body> }` to just the inner body.
+
+    The loop's serve contract is body-only: `ollama_attempt` asks for "ONLY the new
+    function body (no signature, no braces)" and `attempt()` splices the model's output
+    between the function's existing outer braces. Training on full-function answers taught
+    the model to emit the signature+braces too, which the loop then spliced INTO the
+    braces -> nested `name(){name(){}}` -> compile error. Stripping harvest answers to the
+    body aligns train format with serve format.
+
+    Brace-matched from the first top-level `{`, skipping braces inside string/char
+    literals and comments so a `}` in a literal can't truncate the body early.
+    Returns the de-braced body (outer indentation preserved). If no brace is found the
+    input is already a body and is returned unchanged.
+    """
+    i = c.find("{")
+    if i == -1:
+        return c.strip("\n")
+    depth = 0
+    n = len(c)
+    j = i
+    while j < n:
+        ch = c[j]
+        nxt = c[j + 1] if j + 1 < n else ""
+        if ch == '"' or ch == "'":  # skip string / char literal
+            q = ch
+            j += 1
+            while j < n:
+                if c[j] == "\\":
+                    j += 2
+                    continue
+                if c[j] == q:
+                    break
+                j += 1
+        elif ch == "/" and nxt == "/":  # line comment
+            j = c.find("\n", j)
+            if j == -1:
+                break
+        elif ch == "/" and nxt == "*":  # block comment
+            end = c.find("*/", j + 2)
+            j = end + 1 if end != -1 else n
+        elif ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return c[i + 1:j].strip("\n")
+        j += 1
+    return c[i + 1:].strip("\n")  # unbalanced (shouldn't happen) — body after first brace
+
 def _forge_root(start):
     """Walk up from the decomp repo to the ForgeEngine root (the one holding the
     Unsloth data dir the training pipeline reads)."""
@@ -51,12 +102,15 @@ SYS_PROMPT = (
     "You are a decompiler for the Nintendo GameCube (PowerPC, Metrowerks CodeWarrior "
     "MWCC 2.7 / Dolphin SDK 1.2.5n). Given a function's target assembly, output C "
     "source that MWCC compiles to byte-identical assembly. Match register allocation, "
-    "instruction selection, and scheduling — not just behaviour. Output only C.")
+    "instruction selection, and scheduling — not just behaviour. Output ONLY the "
+    "function body — the code that goes between the outer braces. No signature, no "
+    "outer braces, no markdown.")
 
 
 def example(unit, symbol, asm, c, source):
-    """One chat-SFT record: target asm in, matched C out."""
-    user = ("Decompile this GameCube function to matching C.\n\n"
+    """One chat-SFT record: target asm in, matched C BODY out (body-only serve contract)."""
+    user = ("Decompile this GameCube function to matching C. Write only the function "
+            "body (no signature, no outer braces).\n\n"
             "## Target assembly (%s)\n```\n%s\n```" % (symbol, asm.strip()))
     return {
         "messages": [
@@ -91,11 +145,15 @@ def harvest(limit=None):
             if not c:
                 n_nosrc += 1
                 continue  # SDK files lack the .text marker; skip
+            body = to_body(c)  # strip signature+braces -> body-only (loop serve contract)
+            if not body.strip() or body.strip() in ("", "/* empty */"):
+                n_nosrc += 1
+                continue  # empty body (e.g. `{}`) is a useless training target
             asm = forge.fn_asm(unit, sym)
             if not asm:
                 n_noasm += 1
                 continue
-            out.append(example(unit, sym, asm, c, "decomp-harvest"))
+            out.append(example(unit, sym, asm, body, "decomp-harvest"))
             if limit and len(out) >= limit:
                 print("  harvest: hit limit %d (units scanned=%d)" % (limit, n_units))
                 return out
