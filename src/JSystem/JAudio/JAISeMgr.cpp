@@ -141,17 +141,18 @@ void JAInter::SeMgr::clearSeqMuteFromSeStop(JAISound*) {
 /* 80294380-802944A0       .text checkSeMovePara__Q27JAInter5SeMgrFv */
 void JAInter::SeMgr::checkSeMovePara() {
     /* Nonmatching */
-    if (seHandle && seHandle->getSeqParameter()->field_0x1261 != 2) {
-        for (u8 i = 0; i < JAIGlobalParameter::getParamSeCategoryMax(); i++) {
-            for (JAISound* sound = seRegist[i].field_0x4; sound; sound = sound->field_0x34) {
-                for (u8 j = 0; j < 8; j++) {
-                    sound->getSeParameter()->field_0x124[j].move();
-                    sound->getSeParameter()->field_0x1a4[j].move();
-                    sound->getSeParameter()->field_0x2a4[j].move();
-                    sound->getSeParameter()->field_0x324[j].move();
-                    sound->getSeParameter()->field_0x3a4[j].move();
-                    sound->getSeParameter()->field_0x224[j].move();
-                }
+    if (!seHandle || seHandle->getSeqParameter()->field_0x1261 == 2) {
+        return;
+    }
+    for (u8 i = 0; i < JAIGlobalParameter::getParamSeCategoryMax(); i++) {
+        for (JAISound* sound = seRegist[i].field_0x4; sound; sound = sound->field_0x34) {
+            for (u8 j = 0; j < 8; j++) {
+                sound->getSeParameter()->field_0x124[j].move();
+                sound->getSeParameter()->field_0x1a4[j].move();
+                sound->getSeParameter()->field_0x2a4[j].move();
+                sound->getSeParameter()->field_0x324[j].move();
+                sound->getSeParameter()->field_0x3a4[j].move();
+                sound->getSeParameter()->field_0x224[j].move();
             }
         }
     }
