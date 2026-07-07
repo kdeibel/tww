@@ -104,7 +104,6 @@ void daSTBox_c::actWait02(int) {
 /* 000013AC-000013B4       .text actWaitGetItem__9daSTBox_cFi */
 void daSTBox_c::actWaitGetItem(int) {
     /* Nonmatching */
-    return;
 }
 
 /* 000013B4-000013BC       .text actWaitDummy__9daSTBox_cFi */

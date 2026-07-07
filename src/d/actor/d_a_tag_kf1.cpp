@@ -123,7 +123,7 @@ void daTag_Kf1_c::wait_action1(void*) {
 
 /* 00000BE8-00000BF0       .text _draw__11daTag_Kf1_cFv */
 BOOL daTag_Kf1_c::_draw() {
-    /* Nonmatching */
+    return TRUE;
 }
 
 /* 00000BF0-00000C68       .text _execute__11daTag_Kf1_cFv */
