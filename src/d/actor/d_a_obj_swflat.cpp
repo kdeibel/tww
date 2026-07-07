@@ -62,7 +62,7 @@ cPhs_State daObjSwflat::Act_c::Mthd_Create() {
 
 /* 00000974-0000097C       .text Delete__Q211daObjSwflat5Act_cFv */
 BOOL daObjSwflat::Act_c::Delete() {
-    /* Nonmatching */
+    return TRUE;
 }
 
 /* 0000097C-00000A64       .text Mthd_Delete__Q211daObjSwflat5Act_cFv */
@@ -93,6 +93,7 @@ BOOL daObjSwflat::Act_c::Draw() {
 /* 000012D4-000012DC       .text IsDelete__Q211daObjSwflat5Act_cFv */
 BOOL daObjSwflat::Act_c::IsDelete() {
     /* Nonmatching */
+    return TRUE;
 }
 
 namespace daObjSwflat {

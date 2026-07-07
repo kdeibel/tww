@@ -138,7 +138,7 @@ BOOL daObjMagmarock::Method::Draw(void*) {
 
 /* 00002128-00002130       .text IsDelete__Q214daObjMagmarock6MethodFPv */
 BOOL daObjMagmarock::Method::IsDelete(void*) {
-    /* Nonmatching */
+    return TRUE;
 }
 
 actor_method_class daObjMagmarock::Method::Table = {

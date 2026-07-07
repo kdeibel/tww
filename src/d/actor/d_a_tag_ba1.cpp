@@ -39,6 +39,7 @@ void daTag_Ba1_c::createInit() {
 /* 00000288-00000290       .text _draw__11daTag_Ba1_cFv */
 BOOL daTag_Ba1_c::_draw() {
     /* Nonmatching */
+    return TRUE;
 }
 
 /* 00000290-00000340       .text _execute__11daTag_Ba1_cFv */

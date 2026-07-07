@@ -23,7 +23,7 @@ cPhs_State daObjAygr::Act_c::Mthd_Create() {
 
 /* 000004D4-000004DC       .text Delete__Q29daObjAygr5Act_cFv */
 BOOL daObjAygr::Act_c::Delete() {
-    /* Nonmatching */
+    return TRUE;
 }
 
 /* 000004DC-0000054C       .text Mthd_Delete__Q29daObjAygr5Act_cFv */
