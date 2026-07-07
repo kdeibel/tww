@@ -260,7 +260,7 @@ bool daObj_Search::Act_c::_delete() {
 
 /* 8010283C-80102844       .text _isdelete__Q212daObj_Search5Act_cFv */
 BOOL daObj_Search::Act_c::_isdelete() {
-    /* Nonmatching */
+    return TRUE;
 }
 
 /* 80102844-80102864       .text Create__Q212daObj_Search4MthdFPv */
