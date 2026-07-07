@@ -110,7 +110,8 @@ BOOL Mthd_Draw(void*) {
 
 /* 00002B54-00002B5C       .text Mthd_IsDelete__Q213daObjBuoyflag30@unnamed@d_a_obj_buoyflag_cpp@FPv */
 BOOL Mthd_IsDelete(void*) {
-    /* Nonmatching */
+    BOOL ret = TRUE;
+    return ret;
 }
 
 static actor_method_class Mthd_Table = {

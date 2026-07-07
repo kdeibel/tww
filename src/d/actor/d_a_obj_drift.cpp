@@ -39,6 +39,7 @@ void daObjDrift::Act_c::set_flower_current() {
 /* 00000954-0000095C       .text Delete__Q210daObjDrift5Act_cFv */
 BOOL daObjDrift::Act_c::Delete() {
     /* Nonmatching */
+    return TRUE;
 }
 
 /* 0000095C-000009A8       .text Mthd_Delete__Q210daObjDrift5Act_cFv */

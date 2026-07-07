@@ -24,6 +24,7 @@ cPhs_State daObjMsdanSub2::Act_c::Mthd_Create() {
 /* 00000454-0000045C       .text Delete__Q214daObjMsdanSub25Act_cFv */
 BOOL daObjMsdanSub2::Act_c::Delete() {
     /* Nonmatching */
+    return TRUE;
 }
 
 /* 0000045C-000004A8       .text Mthd_Delete__Q214daObjMsdanSub25Act_cFv */

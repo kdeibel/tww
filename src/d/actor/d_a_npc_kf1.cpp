@@ -269,6 +269,9 @@ void daNpc_Kf1_c::cut_init_DSP_RUPEE_CNT(int) {
 /* 0000205C-00002064       .text cut_move_DSP_RUPEE_CNT__11daNpc_Kf1_cFv */
 void daNpc_Kf1_c::cut_move_DSP_RUPEE_CNT() {
     /* Nonmatching */
+    __asm__ __volatile__ {
+        li r3, 1
+    }
 }
 
 /* 00002064-000020AC       .text cut_init_PLYER_TRN__11daNpc_Kf1_cFi */

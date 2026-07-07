@@ -29,7 +29,7 @@ cPhs_State daObjHami2::Act_c::Mthd_Create() {
 
 /* 00000540-00000548       .text Delete__Q210daObjHami25Act_cFv */
 BOOL daObjHami2::Act_c::Delete() {
-    /* Nonmatching */
+    return TRUE;
 }
 
 /* 00000548-000005E8       .text Mthd_Delete__Q210daObjHami25Act_cFv */

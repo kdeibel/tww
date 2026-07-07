@@ -23,7 +23,7 @@ cPhs_State daObjAshut::Act_c::Mthd_Create() {
 
 /* 00000388-00000390       .text Delete__Q210daObjAshut5Act_cFv */
 BOOL daObjAshut::Act_c::Delete() {
-    /* Nonmatching */
+    return TRUE;
 }
 
 /* 00000390-000003DC       .text Mthd_Delete__Q210daObjAshut5Act_cFv */

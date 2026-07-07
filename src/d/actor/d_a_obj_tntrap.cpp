@@ -143,7 +143,7 @@ bool daObjTnTrap_c::_execute() {
 
 /* 00001BE8-00001BF0       .text _draw__13daObjTnTrap_cFv */
 bool daObjTnTrap_c::_draw() {
-    /* Nonmatching */
+    return true;
 }
 
 /* 00001BF0-00001C10       .text daObjTnTrap_Create__FP10fopAc_ac_c */
