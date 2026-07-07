@@ -1,0 +1,79 @@
+{
+ "targets": [
+  "GXInitTlutObj",
+  "__GXUpdateBPMask",
+  "GXSetChanMatColor",
+  "GXSetDispCopyDst",
+  "GXSetChanCtrl",
+  "dMeter_compassRotate__FP18fopMsgM_pane_classP18fopMsgM_pane_classf",
+  "dMeter_xyBowLightAnime__FP15sub_meter_classi",
+  "DefaultRadius__11dCamParam_cFPf",
+  "isFmapClose__12dMenu_Fmap_cFv"
+ ],
+ "floors": {
+  "GXInitTlutObj": 88.88889,
+  "__GXUpdateBPMask": 90.196075,
+  "GXSetChanMatColor": 77.04918,
+  "GXSetDispCopyDst": 53.333336,
+  "GXSetChanCtrl": 52.941177,
+  "dMeter_compassRotate__FP18fopMsgM_pane_classP18fopMsgM_pane_classf": 76.92308,
+  "dMeter_xyBowLightAnime__FP15sub_meter_classi": 79.22078,
+  "DefaultRadius__11dCamParam_cFPf": 78.26087,
+  "isFmapClose__12dMenu_Fmap_cFv": 50.0
+ },
+ "results": {
+  "soma-decomp-v2:latest": {
+   "GXInitTlutObj": 22.222223,
+   "__GXUpdateBPMask": 90.196075,
+   "GXSetChanMatColor": 77.04918,
+   "GXSetDispCopyDst": 86.666664,
+   "GXSetChanCtrl": 50.980396,
+   "dMeter_compassRotate__FP18fopMsgM_pane_classP18fopMsgM_pane_classf": 76.92308,
+   "dMeter_xyBowLightAnime__FP15sub_meter_classi": -1.0,
+   "DefaultRadius__11dCamParam_cFPf": 78.26087,
+   "isFmapClose__12dMenu_Fmap_cFv": 50.0
+  },
+  "soma-decomp:latest": {
+   "GXInitTlutObj": -1.0,
+   "__GXUpdateBPMask": -1.0,
+   "GXSetChanMatColor": -1.0,
+   "GXSetDispCopyDst": -1.0,
+   "GXSetChanCtrl": -1.0,
+   "dMeter_compassRotate__FP18fopMsgM_pane_classP18fopMsgM_pane_classf": 76.92308,
+   "dMeter_xyBowLightAnime__FP15sub_meter_classi": -1.0,
+   "DefaultRadius__11dCamParam_cFPf": -1.0,
+   "isFmapClose__12dMenu_Fmap_cFv": -1.0
+  },
+  "qwable:q8-fable": {
+   "GXInitTlutObj": -1.0,
+   "__GXUpdateBPMask": -1.0,
+   "GXSetChanMatColor": -1.0,
+   "GXSetDispCopyDst": 100.0,
+   "GXSetChanCtrl": -1.0,
+   "dMeter_compassRotate__FP18fopMsgM_pane_classP18fopMsgM_pane_classf": -1.0,
+   "dMeter_xyBowLightAnime__FP15sub_meter_classi": 1.2987013,
+   "DefaultRadius__11dCamParam_cFPf": 78.26087,
+   "isFmapClose__12dMenu_Fmap_cFv": 50.0
+  }
+ },
+ "summary": {
+  "soma-decomp-v2:latest": {
+   "matched": 0,
+   "improved": 1,
+   "compiled": 8,
+   "mean_best": 59.14
+  },
+  "soma-decomp:latest": {
+   "matched": 0,
+   "improved": 0,
+   "compiled": 1,
+   "mean_best": 8.55
+  },
+  "qwable:q8-fable": {
+   "matched": 1,
+   "improved": 1,
+   "compiled": 4,
+   "mean_best": 25.51
+  }
+ }
+}

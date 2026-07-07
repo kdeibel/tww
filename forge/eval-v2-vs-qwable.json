@@ -1,0 +1,90 @@
+{
+ "n": 30,
+ "results": {
+  "soma-decomp-v2:latest": {
+   "expandSceneBgmNum__11JAIZelBasicFUl": 55.555557,
+   "camera_delete__FP20camera_process_class": 81.818184,
+   "GXSetNumTexGens": 100.0,
+   "GXInitTlutObj": 47.368423,
+   "dMsg2_aimBrightness__Fv": 52.63158,
+   "getNeedBufferSize__Q27JAInter9StreamLibFv": 38.095238,
+   "proc__9dDetect_cFv": 71.42857,
+   "execute__19dPa_ripplePcallBackFP14JPABaseEmitterP15JPABaseParticle": 91.30435,
+   "DefaultRadius__11dCamParam_cFPf": 78.26087,
+   "GXEnableTexOffsets": 52.173912,
+   "dMeter_compassRotate__FP18fopMsgM_pane_classP18fopMsgM_pane_classf": 76.92308,
+   "setDecodedBufferBlocks__Q27JAInter9StreamLibFUl": -1.0,
+   "set_quake__9dDetect_cFPC4cXyz": 62.068962,
+   "daMP_Set_PercentMovieVolume__Ff": 78.125,
+   "__ct__Q37JStudio3fvb17TObject_compositeFRCQ47JStudio3fvb4data13TParse_TBlock": -1.0,
+   "__ct__Q37JStudio3fvb16TObject_constantFRCQ47JStudio3fvb4data13TParse_TBlock": -1.0,
+   "__ct__Q37JStudio3fvb18TObject_transitionFRCQ47JStudio3fvb4data13TParse_TBlock": -1.0,
+   "__ct__Q37JStudio3fvb12TObject_listFRCQ47JStudio3fvb4data13TParse_TBlock": -1.0,
+   "__ct__Q37JStudio3fvb22TObject_list_parameterFRCQ47JStudio3fvb4data13TParse_TBlock": -1.0,
+   "__ct__Q37JStudio3fvb15TObject_hermiteFRCQ47JStudio3fvb4data13TParse_TBlock": -1.0,
+   "TRKDispatchMessage": 93.93939,
+   "GXSetArray": 94.59459,
+   "arrowRotate__15dOperate_wind_cFP18fopMsgM_pane_classs": 81.57895,
+   "__GXSetVAT": 61.538464,
+   "dMsg2_textPosition__FP14sub_msg2_classUc": 90.909096,
+   "initHeap__8JAIBasicFv": 95.83333,
+   "__SetSURegs": 80.434784,
+   "__DecodePCM__Q27JAInter9StreamLibFv": 95.74468,
+   "TRK_fill_mem": 51.06383,
+   "alloc__Q28JASystem11TDSPChannelFUlUl": 91.66667
+  },
+  "qwable:q8-fable": {
+   "expandSceneBgmNum__11JAIZelBasicFUl": -1.0,
+   "camera_delete__FP20camera_process_class": -1.0,
+   "GXSetNumTexGens": 100.0,
+   "GXInitTlutObj": -1.0,
+   "dMsg2_aimBrightness__Fv": -1.0,
+   "getNeedBufferSize__Q27JAInter9StreamLibFv": -1.0,
+   "proc__9dDetect_cFv": -1.0,
+   "execute__19dPa_ripplePcallBackFP14JPABaseEmitterP15JPABaseParticle": -1.0,
+   "DefaultRadius__11dCamParam_cFPf": -1.0,
+   "GXEnableTexOffsets": 0.0,
+   "dMeter_compassRotate__FP18fopMsgM_pane_classP18fopMsgM_pane_classf": -1.0,
+   "setDecodedBufferBlocks__Q27JAInter9StreamLibFUl": -1.0,
+   "set_quake__9dDetect_cFPC4cXyz": -1.0,
+   "daMP_Set_PercentMovieVolume__Ff": -1.0,
+   "__ct__Q37JStudio3fvb17TObject_compositeFRCQ47JStudio3fvb4data13TParse_TBlock": 78.125,
+   "__ct__Q37JStudio3fvb16TObject_constantFRCQ47JStudio3fvb4data13TParse_TBlock": -1.0,
+   "__ct__Q37JStudio3fvb18TObject_transitionFRCQ47JStudio3fvb4data13TParse_TBlock": -1.0,
+   "__ct__Q37JStudio3fvb12TObject_listFRCQ47JStudio3fvb4data13TParse_TBlock": -1.0,
+   "__ct__Q37JStudio3fvb22TObject_list_parameterFRCQ47JStudio3fvb4data13TParse_TBlock": -1.0,
+   "__ct__Q37JStudio3fvb15TObject_hermiteFRCQ47JStudio3fvb4data13TParse_TBlock": 78.125,
+   "TRKDispatchMessage": -1.0,
+   "GXSetArray": -1.0,
+   "arrowRotate__15dOperate_wind_cFP18fopMsgM_pane_classs": 68.42105,
+   "__GXSetVAT": 61.538464,
+   "dMsg2_textPosition__FP14sub_msg2_classUc": -1.0,
+   "initHeap__8JAIBasicFv": -1.0,
+   "__SetSURegs": -1.0,
+   "__DecodePCM__Q27JAInter9StreamLibFv": -1.0,
+   "TRK_fill_mem": 2.1276596,
+   "alloc__Q28JASystem11TDSPChannelFUlUl": -1.0
+  }
+ },
+ "summary": {
+  "soma-decomp-v2:latest": {
+   "match_rate": 3.3,
+   "matched": 1,
+   "compiled": 23,
+   "mean_best": 57.4
+  },
+  "qwable:q8-fable": {
+   "match_rate": 3.3,
+   "matched": 1,
+   "compiled": 7,
+   "mean_best": 12.9
+  }
+ },
+ "head_to_head": {
+  "both": [
+   "GXSetNumTexGens"
+  ],
+  "only_v2": [],
+  "only_qwable": []
+ }
+}
