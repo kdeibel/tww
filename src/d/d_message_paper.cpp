@@ -245,6 +245,7 @@ static BOOL dMsg3_Execute(sub_msg3_class*) {
 /* 801EE740-801EE748       .text dMsg3_IsDelete__FP14sub_msg3_class */
 static BOOL dMsg3_IsDelete(sub_msg3_class*) {
     /* Nonmatching */
+    return TRUE;
 }
 
 /* 801EE748-801EE904       .text dMsg3_Delete__FP14sub_msg3_class */

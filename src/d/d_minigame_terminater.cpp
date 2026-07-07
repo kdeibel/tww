@@ -144,7 +144,7 @@ static BOOL dMinigame_Terminater_Execute(dMinigame_Terminater_c*) {
 
 /* 8020A57C-8020A584       .text dMinigame_Terminater_IsDelete__FP22dMinigame_Terminater_c */
 static BOOL dMinigame_Terminater_IsDelete(dMinigame_Terminater_c*) {
-    /* Nonmatching */
+    return TRUE;
 }
 
 /* 8020A584-8020A5A4       .text dMinigame_Terminater_Delete__FP22dMinigame_Terminater_c */
